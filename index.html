@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周喜宁 · 游戏 UI 设计师 | ZHOU XINING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   BRUTAL TERMINAL / GLITCH PUNK
+   pure black · acid green #00ff41 · mono + condensed mega type
+   ========================================================== */
+:root{
+  --bg:#030503; --ink:#e8f5e9; --dim:#7d8a80; --faint:#48544b;
+  --acid:#00ff41; --acid-dim:rgba(0,255,65,.45); --acid-line:rgba(0,255,65,.28);
+  --line:#1c231d; --mono:'JetBrains Mono',monospace; --mega:'Anton','Noto Sans SC',sans-serif;
+  --sans:'Noto Sans SC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;overflow-x:hidden}
+img{display:block}
+::selection{background:var(--acid);color:#000}
+a{color:inherit;text-decoration:none}
+
+/* global CRT scanlines + noise */
+body::before{content:'';position:fixed;inset:0;z-index:99;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.14) 0 1px,transparent 1px 3px)}
+body::after{content:'';position:fixed;inset:0;z-index:98;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+
+/* ---------- nav : [BRACKET] terminal ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 34px;
+  background:linear-gradient(to bottom,rgba(3,5,3,.92),rgba(3,5,3,.55) 70%,transparent)}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;line-height:1.5;letter-spacing:.14em;color:var(--acid)}
+.brand img{width:86px;height:86px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(0,255,65,.5))}
+.brand b{display:block;color:var(--acid);font-weight:700;text-transform:uppercase;letter-spacing:.16em}
+.brand em{font-style:normal;color:var(--acid-dim);font-size:10px;letter-spacing:.14em}
+.nav-links{display:flex;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em}
+.nav-links a,.nav-cta{position:relative;display:inline-block;color:var(--acid);width:96px;text-align:center;padding:8px 0;transition:.2s;cursor:pointer}
+.nav-links a::before,.nav-cta::before{content:'[';color:var(--acid-dim)}
+.nav-links a::after,.nav-cta::after{content:']';color:var(--acid-dim)}
+.nav-links a s,.nav-cta s{text-decoration:none}
+.nav-links a .en,.nav-cta .en{display:inline-block;transition:.18s}
+.nav-links a .cn,.nav-cta .cn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  color:var(--acid);text-shadow:0 0 10px rgba(0,255,65,.7);opacity:0;transition:.18s;white-space:nowrap}
+.nav-links a:hover .en,.nav-cta:hover .en{opacity:0}
+.nav-links a:hover .cn,.nav-cta:hover .cn{opacity:1}
+.nav-links a.active{color:var(--acid);text-shadow:0 0 8px rgba(0,255,65,.7)}
+/* all four nav controls share one identical style — no box, no size jump */
+.nav-cta{margin-left:10px}
+.nav-cta:hover{border-color:transparent;box-shadow:none}
+.nav-right{display:flex;align-items:center}
+
+.nav-links a.active{color:var(--acid);text-shadow:0 0 8px rgba(0,255,65,.6)}
+
+/* ==========================================================
+   BOOT / ENTRANCE ANIMATION
+   mechanical assembly · typewriter · pixel grid sweep
+   ========================================================== */
+
+/* --- global boot overlay: C-P card style — head bar + code + logo block --- */
+#boot{position:fixed;inset:0;z-index:9999;background:#030503;display:flex;
+  align-items:center;justify-content:center;transition:opacity .5s .1s,visibility .5s .1s}
+#boot.done{opacity:0;visibility:hidden}
+/* matrix rain layer + vignette so the panel stays readable */
+#boot::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 62% 58% at 50% 50%,rgba(3,5,3,.42) 0%,rgba(3,5,3,.86) 62%,#030503 100%)}
+#mx-rain{position:absolute;inset:0;z-index:0;display:block;opacity:.62}
+.bp-wrap{position:relative;z-index:2;width:min(92vw,640px);animation:bpFlicker .8s steps(1) both}
+.bp-cap{display:flex;align-items:center;justify-content:center;gap:16px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.5em;text-indent:.5em;color:#e8ede8}
+.bp-cap s{display:block;width:26px;height:3px;background:rgba(0,255,65,.65)}
+.bp-cap s:last-child{background:rgba(0,255,65,.3)}
+.bp-panel{margin-top:16px;position:relative;border:1px solid rgba(0,255,65,.45);
+  background:#050805;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) 196px;
+  grid-template-rows:auto auto;gap:10px;box-shadow:0 0 60px rgba(0,255,65,.08)}
+/* side ticks, like the reference frame */
+.bp-panel::before,.bp-panel::after{content:'';position:absolute;top:40%;height:36px;width:9px;
+  background:rgba(0,255,65,.4)}
+.bp-panel::before{left:-24px}
+.bp-panel::after{right:-24px;background:rgba(0,255,65,.18)}
+.bp-head{grid-column:1;background:var(--acid);color:#031005;
+  font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:.08em;
+  padding:11px 14px;text-transform:uppercase;
+  clip-path:polygon(0 0,100% 0,100% 100%,14px 100%,0 calc(100% - 14px))}
+.bp-code{grid-column:1;align-self:stretch;border:1px solid rgba(0,255,65,.22);
+  padding:8px 12px;font-family:var(--mono);font-size:10px;line-height:1.55;
+  letter-spacing:.04em;color:var(--acid-dim);overflow:hidden;height:112px;
+  display:flex;flex-direction:column}
+.bp-code .gib{color:rgba(0,255,65,.22);font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:clip}
+/* live data stream — endless upward roll of hex/binary telemetry */
+.bstream{margin-top:4px;flex:1;min-height:0;position:relative;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34%,#000 66%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 34%,#000 66%,transparent 100%)}
+.bstream-in{font-family:var(--mono);font-size:9px;line-height:1.6;
+  letter-spacing:.02em;white-space:nowrap;color:rgba(0,255,65,.42);
+  animation:bstreamRoll 6s linear infinite}
+.bstream-in em{font-style:normal;color:rgba(180,255,200,.9)}
+.bstream-in s{text-decoration:none;color:rgba(0,255,65,.24)}
+@keyframes bstreamRoll{to{transform:translateY(-50%)}}
+
+/* ---- boot → site cyber transition: sliced data sweep + scan beam + pixel grid ---- */
+#trans{position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden}
+#trans .tr-veil{position:absolute;inset:0;background:var(--acid);opacity:0;mix-blend-mode:screen}
+#trans .tr-bars{position:absolute;inset:0;display:grid;grid-template-rows:repeat(16,1fr)}
+#trans .tr-bars s{display:block;opacity:.8;mix-blend-mode:screen;transform:translateX(-102%);
+  background:linear-gradient(90deg,rgba(0,255,65,0),var(--acid) 16%,#d9ffe4 50%,var(--acid) 84%,rgba(0,255,65,0))}
+#trans .tr-scan{position:absolute;left:0;right:0;top:-8px;height:3px;background:#e6fff0;
+  box-shadow:0 0 26px 7px rgba(0,255,65,.85),0 0 80px 20px rgba(0,255,65,.32)}
+#trans .tr-grid{position:absolute;inset:0;opacity:0;
+  background-image:linear-gradient(rgba(0,255,65,.16) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,65,.16) 1px,transparent 1px);
+  background-size:34px 34px}
+#trans .tr-tag{position:absolute;left:50%;bottom:15%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:11px;letter-spacing:.42em;text-indent:.42em;
+  color:var(--acid);opacity:0;text-shadow:0 0 14px rgba(0,255,65,.85);white-space:nowrap}
+#trans.go .tr-veil{animation:trVeil .62s .16s steps(1) both}
+#trans.go .tr-bars s{animation:trSlice .46s cubic-bezier(.72,0,.24,1) calc(var(--i)*16ms) both}
+#trans.go .tr-scan{animation:trScan .66s .05s cubic-bezier(.6,0,.35,1) both}
+#trans.go .tr-grid{animation:trGrid .72s steps(3) both}
+#trans.go .tr-tag{animation:trTag .82s .08s steps(1) both}
+@keyframes trVeil{0%{opacity:.3}22%{opacity:0}44%{opacity:.17}100%{opacity:0}}
+@keyframes trSlice{
+  0%{transform:translateX(-102%) scaleY(.32)}
+  55%{transform:translateX(-4%) scaleY(1)}
+  100%{transform:translateX(102%) scaleY(.46)}
+}
+@keyframes trScan{0%{top:-8px;opacity:0}10%{opacity:1}86%{opacity:1}100%{top:100%;opacity:0}}
+@keyframes trGrid{0%{opacity:0}18%{opacity:.92}42%{opacity:.14}64%{opacity:.72}100%{opacity:0}}
+@keyframes trTag{0%,100%{opacity:0}20%,34%{opacity:1}40%,54%{opacity:.1}60%,74%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#trans{display:none}}
+.bp-right{grid-column:2;grid-row:1/3;background:var(--acid);position:relative;
+  display:grid;place-items:center;overflow:hidden;
+  clip-path:polygon(0 0,100% 0,100% 76%,74% 100%,0 100%)}
+.bp-right img{height:96%;width:auto;max-width:96%;object-fit:contain;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.35));animation:bpPulse 1.6s ease-in-out infinite}
+@keyframes bpPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+/* data scan sweeping down the green sigil block */
+.bp-right::before{content:'';position:absolute;left:0;right:0;height:26%;top:-30%;
+  background:linear-gradient(180deg,transparent,rgba(3,16,5,.42),transparent);
+  animation:bpScan 2.1s linear infinite;pointer-events:none}
+@keyframes bpScan{to{top:110%}}
+.bp-right::after{content:'SIGIL // VERIFIED';position:absolute;bottom:7px;left:10px;
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:rgba(3,16,5,.75)}
+.bp-bar{grid-column:1/-1;height:4px;background:#0e1a11;overflow:hidden}
+.bp-bar i{display:block;height:100%;width:0;background:var(--acid);
+  box-shadow:0 0 12px rgba(0,255,65,.9);animation:bootBar 1.5s .55s cubic-bezier(.4,0,.2,1) forwards}
+.bp-foot{margin-top:16px;display:flex;align-items:center;gap:10px}
+.bp-foot i:first-child{flex:1;height:5px;background:rgba(0,255,65,.55)}
+.bp-foot i:last-child{width:9px;height:5px;background:rgba(0,255,65,.25)}
+#boot .bline{display:flex;justify-content:space-between;gap:16px;opacity:0;flex:0 0 auto;
+  animation:bootLine .01s linear forwards}
+#boot .bline span:last-child{color:var(--dim)}
+#boot .bok{color:var(--acid)}
+@keyframes bootLine{to{opacity:1}}
+@keyframes bootBar{to{width:100%}}
+@keyframes bpFlicker{
+  0%{opacity:0;transform:skewX(-2deg)}
+  8%{opacity:.4}
+  16%{opacity:0}
+  26%{opacity:.75;transform:skewX(1.4deg)}
+  38%{opacity:.15}
+  52%{opacity:.9;transform:none}
+  64%{opacity:.35}
+  78%{opacity:1}
+  100%{opacity:1;transform:none}
+}
+
+/* --- stage element: hidden until the sequence reaches it --- */
+.boot-stage{opacity:0}
+body.booted .boot-stage{opacity:1}
+
+/* 1. nav : mechanical drop from the top, chrome-slide */
+body.booted .brand{animation:mechDrop .7s .1s cubic-bezier(.2,1.3,.4,1) both}
+body.booted .nav-links a,
+body.booted .nav-cta{animation:mechDrop .55s cubic-bezier(.2,1.3,.4,1) both}
+body.booted .nav-links a:nth-child(1){animation-delay:.2s}
+body.booted .nav-links a:nth-child(2){animation-delay:.28s}
+body.booted .nav-links a:nth-child(3){animation-delay:.36s}
+body.booted .nav-cta{animation-delay:.44s}
+@keyframes mechDrop{0%{opacity:0;transform:translateY(-22px) scaleY(.5);filter:blur(3px)}
+  60%{opacity:1;transform:translateY(3px) scaleY(1.06);filter:blur(0)}
+  100%{opacity:1;transform:none}}
+
+/* 2. grid + wall : pixel-block reveal, column by column */
+body.booted .pagegrid{animation:pixelIn .9s .15s steps(8) both}
+@keyframes pixelIn{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+body.booted .bgwall{animation:wallIn 1.1s .2s cubic-bezier(.22,1,.36,1) both}
+@keyframes wallIn{from{opacity:0;transform:scale(1.06)}to{opacity:.3;transform:none}}
+
+/* 3. mega title : per-glyph pixel drop + typewriter caret */
+.mega .cn-big{display:flex;align-items:baseline}
+.mega .g{display:inline-block;opacity:0;transform:translateY(-40px) scaleY(.4) skewX(-8deg)}
+body.booted .mega .g{animation:glyphDrop .62s cubic-bezier(.18,1.25,.36,1) both}
+@keyframes glyphDrop{0%{opacity:0;transform:translateY(-40px) scaleY(.4) skewX(-8deg);filter:brightness(2.4)}
+  35%{opacity:1;filter:brightness(1.6)}
+  62%{transform:translateY(4px) scaleY(1.05) skewX(0);filter:brightness(1)}
+  80%{transform:translateY(-2px) scaleY(.99)}
+  100%{opacity:1;transform:none;filter:none}}
+.mega .cn-big i.dot{animation-delay:1.05s}
+/* block caret blinking right after the big name */
+.mega .caret{display:inline-block;width:.16em;height:.72em;margin-left:.08em;
+  background:var(--acid);box-shadow:0 0 14px rgba(0,255,65,.8);
+  opacity:0;animation:none;align-self:center}
+body.booted .mega .caret{animation:caretOn .01s 1.15s forwards,blink .7s 1.15s steps(1) 3,caretOff .01s 3.35s forwards}
+@keyframes caretOn{to{opacity:1}}
+@keyframes caretOff{to{opacity:0;width:0;margin-left:0}}
+
+/* 4. subtitle : typewriter with a stepped reveal */
+.type-line{position:relative;display:inline-block;overflow:hidden;white-space:nowrap;
+  border-right:2px solid var(--acid);width:0;opacity:0}
+body.booted .cn-sub.type-line{animation:typeIn .8s 1.25s steps(8) forwards,cursorOff .01s 2.1s forwards}
+body.booted .en-deco.type-line{animation:typeIn 1s 1.65s steps(30) forwards,cursorOff .01s 2.75s forwards}
+body.booted .tag-hl.type-line{animation:typeIn .55s 2.35s steps(10) forwards,cursorOff .01s 3s forwards}
+@keyframes typeIn{from{width:0;opacity:1}to{width:100%;opacity:1}}
+@keyframes cursorOff{to{border-right-color:transparent}}
+
+/* 5. buttons : mechanical slide-in from the left, one by one */
+.mega,.tag-hl,.tag-sub,.hero-btns .btn-term{opacity:0}
+body.booted .mega,body.booted .tag-hl,body.booted .tag-sub{opacity:1}
+body.booted .hero-btns .btn-term{animation:btnSlide .55s cubic-bezier(.22,1,.36,1) both}
+body.booted .hero-btns .btn-term:nth-child(1){animation-delay:2.85s}
+body.booted .hero-btns .btn-term:nth-child(2){animation-delay:2.95s}
+@keyframes btnSlide{0%{opacity:0;transform:translateX(-30px);clip-path:inset(0 100% 0 0)}
+  55%{opacity:1;clip-path:inset(0 0 0 0)}
+  70%{transform:translateX(5px)}
+  100%{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
+
+/* 6. logo : mechanical iris/assembly — slices converge, then lock with a flash */
+.logo-stage img.main{opacity:0}
+body.booted .logo-stage img.main{animation:logoLock .9s .55s cubic-bezier(.2,1,.3,1) both}
+@keyframes logoLock{0%{opacity:0;transform:scale(.72) rotate(-6deg);filter:blur(8px) brightness(2.6)}
+  45%{opacity:1;filter:blur(0) brightness(1.7)}
+  70%{transform:scale(1.05) rotate(1deg)}
+  100%{opacity:1;transform:none;filter:none}}
+/* assembly brackets that snap in around the logo */
+.logo-stage::after{content:'';position:absolute;inset:6%;z-index:1;pointer-events:none;opacity:0;
+  border:1px solid var(--acid);
+  clip-path:polygon(0 0,38% 0,38% 2px,2px 2px,2px 38%,0 38%,
+    100% 0,100% 38%,calc(100% - 2px) 38%,calc(100% - 2px) 2px,62% 2px,62% 0,
+    0 100%,0 62%,2px 62%,2px calc(100% - 2px),38% calc(100% - 2px),38% 100%,
+    100% 100%,62% 100%,62% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 62%,100% 62%)}
+body.booted .logo-stage::after{animation:bracketSnap .5s 1.3s cubic-bezier(.2,1.4,.3,1) both}
+@keyframes bracketSnap{0%{opacity:0;transform:scale(1.35)}70%{opacity:1;transform:scale(.97)}100%{opacity:.85;transform:none}}
+/* scanning lock line sweeping the logo once */
+.logo-scanline{position:absolute;left:6%;right:6%;height:2px;z-index:4;pointer-events:none;
+  background:var(--acid);box-shadow:0 0 18px rgba(0,255,65,.95);opacity:0}
+body.booted .logo-scanline{animation:lockScan .9s .75s cubic-bezier(.5,0,.4,1) both}
+@keyframes lockScan{0%{opacity:0;top:6%}10%{opacity:1}90%{opacity:1}100%{opacity:0;top:94%}}
+
+/* 7. HUD + note box : terminal typing, staggered */
+.logo-hud,.frame-box.note{opacity:0}
+body.booted .logo-hud{animation:hudIn .01s 2.2s forwards}
+body.booted .frame-box.note{animation:noteIn .6s 2.45s cubic-bezier(.22,1,.36,1) both}
+@keyframes hudIn{to{opacity:1}}
+@keyframes noteIn{0%{opacity:0;clip-path:inset(0 0 100% 0);transform:translateY(8px)}
+  100%{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
+
+/* 8. stats strip : mechanical counters flipping up, left to right */
+.stats{opacity:0}
+body.booted .stats{animation:statsIn .7s 3.15s cubic-bezier(.22,1,.36,1) both}
+@keyframes statsIn{0%{opacity:0;transform:translateY(24px);clip-path:inset(100% 0 0 0)}
+  100%{opacity:1;transform:none;clip-path:inset(0 0 0 0)}}
+body.booted .stat{animation:statFlip .5s cubic-bezier(.2,1.3,.3,1) both}
+body.booted .stat:nth-child(1){animation-delay:3.3s}
+body.booted .stat:nth-child(2){animation-delay:3.42s}
+body.booted .stat:nth-child(3){animation-delay:3.54s}
+body.booted .stat:nth-child(4){animation-delay:3.66s}
+@keyframes statFlip{0%{opacity:0;transform:translateY(14px) rotateX(-70deg)}
+  100%{opacity:1;transform:none}}
+
+/* 9. scroll hint appears last */
+.scroll-hint{opacity:0}
+body.booted .scroll-hint{animation:hudIn .01s 3.9s forwards,bob 2.4s 4s ease-in-out infinite}
+
+/* reduced-motion: skip the whole show */
+@media (prefers-reduced-motion:reduce){
+  #boot{display:none}
+  .boot-stage,.mega,.mega .g,.mega .caret,.type-line,.stats,.stat,.scroll-hint,
+  .logo-hud,.frame-box.note,.logo-stage img.main,.hero-btns .btn-term{opacity:1 !important;
+    animation:none !important;transform:none !important;width:auto !important;clip-path:none !important}
+}
+
+/* ---------- PAGE-WIDE bg wall : 45° diagonal marquee + glitch ---------- */
+.bgwall{position:fixed;inset:-60%;z-index:0;pointer-events:none;overflow:hidden;opacity:.3}
+.bg-wall{position:absolute;inset:-20% -40%;display:flex;flex-direction:column;gap:16px;
+  transform:rotate(-45deg);transform-origin:center center;
+  filter:grayscale(1) contrast(1.12) brightness(.82)}
+.m-row{display:flex;gap:16px;flex:none;animation:rowMove var(--dur,60s) linear infinite}
+.m-row img{height:255px;width:auto;flex:none;border:1px solid rgba(0,255,65,.12)}
+@keyframes rowMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* glitch echoes of the wall */
+.bg-glitch{position:absolute;inset:-30%;display:flex;flex-direction:column;gap:18px;
+  transform:rotate(-45deg);opacity:0;mix-blend-mode:screen;pointer-events:none}
+.bg-glitch img{height:255px;width:auto;flex:none}
+.bg-glitch.g1{animation:gw 4.6s steps(1) infinite}
+.bg-glitch.g1 img{filter:sepia(1) saturate(6) hue-rotate(60deg) brightness(.9)}
+@keyframes gw{0%,86%{opacity:0;clip-path:inset(0 0 100% 0);transform:rotate(-45deg) translateX(0)}
+  87%{opacity:.7;clip-path:inset(30% 0 52% 0);transform:rotate(-45deg) translateX(-26px)}
+  89%{opacity:.5;clip-path:inset(62% 0 18% 0);transform:rotate(-45deg) translateX(18px)}
+  91%,100%{opacity:0;clip-path:inset(0 0 100% 0);transform:rotate(-45deg) translateX(0)}}
+.bg-glitch.g2{animation:gw2 7.3s 1.2s steps(1) infinite}
+.bg-glitch.g2 img{filter:sepia(1) saturate(5) hue-rotate(200deg) brightness(.85)}
+@keyframes gw2{0%,91%{opacity:0;clip-path:inset(0 0 100% 0);transform:rotate(-45deg) translateX(0)}
+  92%{opacity:.55;clip-path:inset(12% 0 74% 0);transform:rotate(-45deg) translateX(22px)}
+  94%{opacity:.4;clip-path:inset(48% 0 34% 0);transform:rotate(-45deg) translateX(-16px)}
+  96%,100%{opacity:0;clip-path:inset(0 0 100% 0);transform:rotate(-45deg) translateX(0)}}
+/* tearing scan bar sweeping the wall */
+.bg-tear{position:absolute;left:0;right:0;height:26px;z-index:2;pointer-events:none;
+  background:rgba(0,255,65,.14);mix-blend-mode:screen;filter:blur(1px);
+  animation:tear 5.2s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes tear{0%,78%{top:-8%;opacity:0}80%{opacity:1}100%{top:108%;opacity:0}}
+/* second tear bar, offset timing */
+.bg-tear.t2{height:9px;background:rgba(255,45,85,.16);animation:tear 7.8s 2.4s cubic-bezier(.7,0,.3,1) infinite}
+/* extra full-screen glitch flashes */
+.bgflash{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:linear-gradient(to bottom,transparent 0%,rgba(0,255,65,.1) 18%,transparent 34%,
+    rgba(0,255,65,.07) 52%,transparent 66%,rgba(0,255,65,.09) 84%,transparent 100%);
+  animation:flash 6.4s steps(1) infinite}
+@keyframes flash{0%,90%{opacity:0;transform:translateY(0)}
+  91%{opacity:.9;transform:translateY(-6px)}
+  93%{opacity:.5;transform:translateY(4px)}
+  95%,100%{opacity:0;transform:translateY(0)}}
+.tearline{position:fixed;left:0;right:0;height:100%;z-index:2;pointer-events:none;opacity:0}
+.tearline span{position:absolute;left:0;right:0;background:rgba(0,255,65,.5);mix-blend-mode:screen;
+  animation:tearLine 5.9s steps(1) infinite}
+.tearline span:nth-child(1){top:22%;height:2px;animation-delay:0s}
+.tearline span:nth-child(2){top:55%;height:3px;animation-delay:.4s}
+.tearline span:nth-child(3){top:81%;height:1px;animation-delay:.8s}
+.tearline span:nth-child(4){top:38%;height:2px;animation-delay:1.2s}
+@keyframes tearLine{0%,93%{opacity:0;transform:translateX(0)}94%{opacity:1;transform:translateX(-28px)}
+  96%{opacity:.7;transform:translateX(22px)}98%,100%{opacity:0;transform:translateX(0)}}
+/* legacy hero-local bg (kept for the glow layer only) */
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(ellipse 70% 60% at 42% 45%,rgba(3,5,3,.55) 0%,rgba(3,5,3,.22) 55%,transparent 100%),
+  linear-gradient(to bottom,rgba(3,5,3,.6) 0%,rgba(3,5,3,.15) 30%,rgba(3,5,3,.2) 62%,var(--bg) 96%)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;z-index:3;min-height:100vh;padding:min(74px,9vh) 34px min(26px,3.4vh);display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.hero-grid{display:none}
+/* page-wide neon grid, sits above the photo wall and below the content */
+.pagegrid{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(rgba(0,255,65,.14) 1px,transparent 1px),
+             linear-gradient(90deg,rgba(0,255,65,.14) 1px,transparent 1px);
+  background-size:72px 72px;
+  animation:gridDrift 14s linear infinite}
+@keyframes gridDrift{from{background-position:0 0,0 0}to{background-position:72px 72px,72px 72px}}
+.hero-wrap{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:40px;align-items:center}
+/* the left column hugs the headline so the highlight bar can size to its text */
+.hero-wrap > div:first-child{justify-self:start;max-width:100%}
+.mega{width:fit-content}
+.tag-hl{width:fit-content}
+.tag-sub{width:fit-content}
+
+/* mega stacked title with glitch */
+.mega{position:relative;font-family:'Noto Sans SC',var(--sans);font-weight:900;
+  color:#f2f5f0;user-select:none;line-height:1.04}
+.mega .cn-big{display:block;font-size:clamp(34px,min(6.4vw,11vh),94px);letter-spacing:.05em}
+.mega .cn-big i{font-style:normal;color:var(--acid)}
+.mega .cn-sub{display:block;margin-top:min(10px,1.3vh);font-size:clamp(16px,min(2.6vw,4.4vh),36px);
+  letter-spacing:.3em;color:#e8f5e9}
+.mega .en-deco{display:block;margin-top:min(14px,1.8vh);font-family:var(--mono);font-weight:400;
+  font-size:clamp(10px,1vw,13px);letter-spacing:.34em;color:var(--acid-dim)}
+.mega .en-deco b{color:var(--acid);font-weight:400}
+.mega::before,.mega::after{content:attr(data-t);position:absolute;left:0;top:0;z-index:-1;
+  font:inherit;letter-spacing:inherit;color:var(--acid);opacity:.5;white-space:pre-line}
+.mega::before{animation:gA 3.8s steps(1) infinite}
+.mega::after{animation:gB 3.8s steps(1) infinite}
+@keyframes gA{0%,92%{clip-path:inset(0 0 100% 0);transform:none}
+  93%{clip-path:inset(12% 0 64% 0);transform:translate(-6px,0)}
+  95%{clip-path:inset(58% 0 18% 0);transform:translate(5px,0)}
+  97%,100%{clip-path:inset(0 0 100% 0);transform:none}}
+@keyframes gB{0%,93%{clip-path:inset(0 0 100% 0);transform:none}
+  94%{clip-path:inset(70% 0 6% 0);transform:translate(-5px,0)}
+  96%{clip-path:inset(30% 0 48% 0);transform:translate(6px,0)}
+  98%,100%{clip-path:inset(0 0 100% 0);transform:none}}
+
+.tag-hl{display:inline-block;margin-top:min(16px,2.2vh);padding:0;
+  font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em}
+.tag-hl .taghl-in{display:inline-block;background:var(--acid);color:#000;padding:min(6px,.9vh) 12px;font-size:min(13px,1.8vh)}
+.tag-sub{display:block;margin-top:min(6px,.8vh);font-family:var(--mono);font-size:min(12px,1.6vh);letter-spacing:.28em;color:var(--dim)}
+.hero-btns{display:flex;flex-direction:row;align-items:flex-start;gap:14px;margin-top:min(18px,2.4vh)}
+.btn-term{font-family:var(--mono);font-size:min(12px,1.6vh);letter-spacing:.12em;color:var(--ink);
+  border:1px solid #2a352b;padding:min(8px,1.1vh) 18px;white-space:nowraptransition:.2s;position:relative;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.btn-term s{text-decoration:none;color:var(--acid);margin-right:10px}
+.btn-term::after{content:'_';color:var(--acid);animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.btn-term:hover{border-color:var(--acid);background:rgba(0,255,65,.08);box-shadow:0 0 22px rgba(0,255,65,.25);transform:translateX(4px)}
+
+/* right side : bare glitched logo (no frame) */
+.portrait{position:relative;justify-self:end;width:min(100%,430px,54vh)}
+.logo-stage{position:relative;aspect-ratio:.92;display:grid;place-items:center;overflow:visible}
+.logo-stage::before{content:'';position:absolute;inset:-8%;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.06) 0 2px,transparent 2px 5px);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 72%);
+  mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 72%)}
+.logo-stage img.main{width:112%;filter:drop-shadow(0 0 52px rgba(0,255,65,.42));
+  animation:logoFloat 6s ease-in-out infinite;position:relative;z-index:2}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+/* RGB-split glitch copies of the logo */
+.logo-stage .gl{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;z-index:3}
+.logo-stage .gl img{width:112%}
+.logo-stage .gl.r img{filter:drop-shadow(0 0 14px rgba(255,45,85,.85)) opacity(.9) sepia(1) saturate(9) hue-rotate(-90deg)}
+.logo-stage .gl.c img{filter:drop-shadow(0 0 14px rgba(0,240,255,.85)) opacity(.9) sepia(1) saturate(9) hue-rotate(150deg)}
+.logo-stage .gl.r{animation:glR 5.4s steps(1) infinite}
+.logo-stage .gl.c{animation:glC 5.4s steps(1) infinite}
+@keyframes glR{0%,88%{opacity:0;transform:none}89%{opacity:.85;transform:translate(-10px,4px)}91%{opacity:.6;transform:translate(7px,-3px)}93%,100%{opacity:0;transform:none}}
+@keyframes glC{0%,88%{opacity:0;transform:none}89%{opacity:.85;transform:translate(10px,-4px)}91%{opacity:.6;transform:translate(-7px,3px)}93%,100%{opacity:0;transform:none}}
+/* slice tear across the logo */
+.logo-stage .slice{position:absolute;left:-6%;right:-6%;background:rgba(3,5,3,.92);z-index:4;pointer-events:none}
+.logo-stage .slice.s1{top:30%;height:3px;animation:sl1 4.2s steps(1) infinite}
+.logo-stage .slice.s2{top:62%;height:6px;animation:sl2 5.6s steps(1) infinite}
+@keyframes sl1{0%,86%{transform:translateX(0)}87%{transform:translateX(-18px)}89%{transform:translateX(14px)}91%,100%{transform:translateX(0)}}
+@keyframes sl2{0%,90%{transform:translateX(0);height:6px}91%{transform:translateX(24px);height:16px}94%{transform:translateX(-12px);height:6px}96%,100%{transform:translateX(0)}}
+/* HUD deco (floating, no box) */
+.logo-hud{position:absolute;font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--acid);z-index:5;
+  text-shadow:0 0 10px rgba(0,255,65,.8);animation:hudFlick 7s steps(1) infinite}
+.logo-hud.tl{top:2%;left:-2%}.logo-hud.br{bottom:2%;right:-2%;text-align:right}
+.logo-hud i{font-style:normal;color:var(--acid-dim)}
+@keyframes hudFlick{0%,89%{opacity:1}90%{opacity:.35}91%{opacity:1}94%{opacity:.5}95%,100%{opacity:1}}
+/* corner-bracket frame box, like the reference */
+.frame-box{position:relative;padding:18px 22px}
+.frame-box::before,.frame-box::after{content:'';position:absolute;width:100%;height:100%;pointer-events:none}
+.frame-box::before{top:0;left:0;
+  border-top:1px solid var(--acid);border-left:1px solid var(--acid);
+  clip-path:polygon(0 0,42% 0,42% 1px,1px 1px,1px 42%,0 42%)}
+.frame-box::after{bottom:0;right:0;
+  border-bottom:1px solid var(--acid);border-right:1px solid var(--acid);
+  clip-path:polygon(100% 58%,100% 100%,58% 100%,58% calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) 58%)}
+.frame-box .fb-tl,.frame-box .fb-tr,.frame-box .fb-bl,.frame-box .fb-br{position:absolute;
+  width:11px;height:11px;border:1px solid var(--acid);pointer-events:none}
+.frame-box .fb-tl{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.frame-box .fb-tr{top:-1px;right:-1px;border-left:0;border-bottom:0}
+.frame-box .fb-bl{bottom:-1px;left:-1px;border-right:0;border-top:0}
+.frame-box .fb-br{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.portrait .note{font-family:var(--mono);font-size:min(11px,1.5vh);line-height:1.8;letter-spacing:.1em;
+  color:var(--acid);text-align:center;margin-top:min(12px,1.6vh)}
+.portrait .note em{font-style:normal;color:var(--dim);display:block;margin-top:6px}
+.portrait .note-shift{position:absolute;left:0;top:0;color:var(--acid-dim);pointer-events:none;
+  animation:noteGlitch 6s steps(1) infinite}
+@keyframes noteGlitch{0%,90%{opacity:0;transform:none}91%{opacity:.8;transform:translate(-4px,2px)}93%{opacity:.5;transform:translate(3px,-2px)}95%,100%{opacity:0;transform:none}}
+
+/* hero stats strip */
+.stats{position:relative;z-index:2;display:flex;margin-top:min(30px,4vh);border:1px solid var(--line);
+  background:rgba(0,0,0,.4)}
+.stat{flex:1;padding:min(9px,1.2vh) 18px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-family:var(--mega);font-weight:400;font-size:min(22px,2.9vh);color:var(--acid);letter-spacing:.02em;text-shadow:0 0 16px rgba(0,255,65,.4)}
+.stat span{font-family:var(--mono);font-size:min(12.5px,1.65vh);letter-spacing:.16em;color:var(--dim)}
+/* short-laptop compaction : trigger by viewport HEIGHT so 768p screens
+   show the full hero (title / tagline / buttons / logo / note / stats) */
+.scroll-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:.5em;color:var(--faint);animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* ---------- sections ---------- */
+section{position:relative;z-index:3;padding:120px 34px 100px;max-width:1500px;margin:0 auto}
+/* readability scrim so the page-wide wall never fights the content */
+section::before,footer::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(3,5,3,.86) 0%,rgba(3,5,3,.6) 60%,rgba(3,5,3,.4) 100%)}
+.sec-head{margin-bottom:56px}
+.sec-label{font-family:var(--mono);font-size:15px;letter-spacing:.1em;color:var(--ink);
+  border-bottom:2px solid var(--acid);display:inline-block;padding-bottom:10px}
+.sec-label::before{content:'_';color:var(--acid)}
+.sec-label b{font-weight:400;color:var(--acid);margin-left:14px;font-size:11px;letter-spacing:.2em}
+.sec-line{height:1px;background:var(--line);margin-top:-1px}
+
+/* group label */
+.group-label{display:flex;align-items:baseline;gap:16px;margin:64px 0 26px}
+.group-label b{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.12em;color:var(--ink)}
+.group-label b::before{content:'_/ ';color:var(--acid)}
+.group-label span{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--faint)}
+.group-label .gl{flex:1;height:1px;background:var(--line);position:relative}
+.group-label .gl::after{content:'';position:absolute;right:0;top:-2px;width:34px;height:5px;background:var(--acid)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(30px);filter:blur(1.5px);
+  transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1),filter .55s linear}
+.rv.in{opacity:1;transform:none;filter:none}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}.rv.d5{transition-delay:.5s}
+
+/* ==========================================================
+   SECTION ENTRANCES — one distinct story per section.
+   · 01 简介 → 展开 : a folio hinges open, its pages unfold
+   · 02 项目 → 入侵 : the system is scanned, cracked, taken over
+   · 03 练习 → 对焦 : the shots are racked into focus
+   · 04 联系 → 数据流 : the signal rises like a data tide
+   clip-path / filter live ONLY inside keyframes: idle elements
+   stay unclipped so the scroll observer keeps firing and hover
+   transforms survive once an animation has finished.
+   ========================================================== */
+
+/* --- 01 ABOUT · 展开 ---------------------------------------------------- */
+/* the id card hinges open on its left edge, like a folio cover */
+#about .profile.in{animation:profOpen 1.05s cubic-bezier(.22,.9,.25,1) backwards;
+  transform-origin:left center;backface-visibility:hidden}
+@keyframes profOpen{
+  0%{opacity:0;transform:perspective(1500px) rotateY(-86deg) translateX(-24px);filter:brightness(.3) saturate(.25)}
+  24%{opacity:1;filter:brightness(.55) saturate(.5)}
+  58%{transform:perspective(1500px) rotateY(-14deg);filter:brightness(1.3) saturate(.85)}
+  74%{transform:perspective(1500px) rotateY(3deg);filter:brightness(1.1)}
+  88%{transform:perspective(1500px) rotateY(-1.2deg)}
+  100%{opacity:1;transform:perspective(1500px) rotateY(0deg);filter:none}
+}
+/* once it lies flat a scanner runs over the spread */
+#about .profile.in::after{animation:cardScan 1.2s .5s cubic-bezier(.4,0,.5,1) backwards}
+@keyframes cardScan{
+  0%{opacity:0;top:-36%}
+  10%{opacity:1}
+  38%{opacity:1;top:60%}
+  42%{opacity:.35;top:52%}          /* stutter */
+  46%{opacity:1;top:66%}
+  76%{opacity:1;top:104%}
+  100%{opacity:0;top:104%}
+}
+
+/* the bio is the facing page — it unfolds outward from the spine */
+#about .about-bio.in{animation:bioOpen 1s .14s cubic-bezier(.25,.9,.25,1) backwards}
+@keyframes bioOpen{
+  0%{opacity:0;clip-path:inset(0 50% 0 50%)}
+  28%{opacity:1;clip-path:inset(0 40% 0 36%)}
+  52%{clip-path:inset(0 22% 0 18%)}
+  72%{clip-path:inset(0 6% 0 4%)}
+  100%{opacity:1;clip-path:inset(0 0 0 0)}
+}
+
+/* strength rows : folded panels flipping down into place */
+#about .adv-list.in .adv-row{animation:advOpen .74s cubic-bezier(.22,.9,.25,1) backwards;
+  transform-origin:top center}
+#about .adv-list.in .adv-row:nth-child(1){animation-delay:.18s}
+#about .adv-list.in .adv-row:nth-child(2){animation-delay:.3s}
+#about .adv-list.in .adv-row:nth-child(3){animation-delay:.42s}
+@keyframes advOpen{
+  0%{opacity:0;transform:perspective(1000px) rotateX(-80deg);filter:brightness(.35)}
+  45%{opacity:1;filter:brightness(1.25)}
+  100%{opacity:1;transform:perspective(1000px) rotateX(0deg);filter:none}
+}
+
+/* the experience folio opens out of its centre seam */
+#about .xp-term.in{animation:xpOpen 1.05s .16s cubic-bezier(.22,.9,.25,1) backwards}
+@keyframes xpOpen{
+  0%{opacity:0;clip-path:inset(50% 0 50% 0);filter:brightness(2.2)}
+  20%{opacity:1;clip-path:inset(44% 0 44% 0);filter:brightness(2)}
+  46%{clip-path:inset(24% 0 24% 0);filter:brightness(1.6)}
+  70%{clip-path:inset(7% 0 7% 0);filter:brightness(1.25)}
+  100%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+}
+
+/* section title : splits open from its centre */
+#about .sec-head.in{animation:secOpen .82s cubic-bezier(.25,.9,.25,1) backwards}
+@keyframes secOpen{
+  0%{opacity:0;clip-path:inset(0 50% 0 50%)}
+  34%{opacity:1;clip-path:inset(0 42% 0 38%)}
+  66%{clip-path:inset(0 18% 0 14%)}
+  100%{opacity:1;clip-path:inset(0 0 0 0)}
+}
+
+/* --- 02 PROJECTS · 入侵 ------------------------------------------------- */
+/* the title is typed in by the intrusion script */
+#projects .sec-head.in{animation:secType .9s steps(15,end) backwards}
+@keyframes secType{
+  0%{opacity:0;clip-path:inset(0 100% 0 0)}
+  7%{opacity:1}
+  100%{opacity:1;clip-path:inset(0 0 0 0)}
+}
+
+/* flagship tiles: written in row by row by the cracker — warning-red
+   while the door is being forced, settling green once it opens */
+#projects .card.in{animation:cardCrack 1.05s steps(10,end) backwards}
+@keyframes cardCrack{
+  0%{opacity:0;clip-path:inset(0 0 100% 0);filter:brightness(3) saturate(0)}
+  10%{opacity:1;filter:sepia(.6) hue-rotate(-42deg) saturate(4.2) brightness(1.8)}
+  30%{clip-path:inset(0 0 66% 0);filter:sepia(.55) hue-rotate(-34deg) saturate(3.6) brightness(1.7)}
+  50%{clip-path:inset(0 0 46% 0);filter:sepia(.3) hue-rotate(24deg) saturate(2.4) brightness(1.55)}
+  70%{clip-path:inset(0 0 26% 0);filter:hue-rotate(52deg) saturate(1.7) brightness(1.3)}
+  86%{clip-path:inset(0 0 9% 0);filter:hue-rotate(30deg) saturate(1.2) brightness(1.15)}
+  100%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+}
+/* the intrusion scan-line travels down in lockstep with the reveal */
+#projects .card::before{content:'';position:absolute;left:0;right:0;top:-2px;height:2px;z-index:5;
+  opacity:0;pointer-events:none;background:var(--acid);
+  box-shadow:0 0 16px 2px rgba(0,255,65,.85),0 0 44px rgba(0,255,65,.35)}
+#projects .card.in::before{animation:crackScan 1.05s steps(10,end) backwards}
+@keyframes crackScan{
+  0%{opacity:0;top:-2px}
+  8%{opacity:1}
+  94%{opacity:1;top:100%}
+  100%{opacity:0;top:100%}
+}
+
+/* mini tiles: a port is breached — the picture opens out of a pinhole */
+#projects .mini.in{animation:miniBreach .95s cubic-bezier(.22,.9,.25,1) backwards}
+@keyframes miniBreach{
+  0%{opacity:0;clip-path:inset(48% 48% 48% 48%);filter:brightness(3.2) saturate(0)}
+  14%{opacity:1;clip-path:inset(39% 41% 39% 41%);filter:brightness(2.6) hue-rotate(-30deg) saturate(2.4)}
+  36%{clip-path:inset(25% 23% 25% 23%);filter:brightness(2) hue-rotate(-10deg) saturate(1.6)}
+  62%{clip-path:inset(7% 7% 7% 7%);filter:brightness(1.5) saturate(1.1)}
+  82%{clip-path:inset(0 0 0 0);box-shadow:0 0 0 1px rgba(0,255,65,.7),0 0 24px rgba(0,255,65,.3)}
+  100%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+}
+/* breach wave across each grid (entry only — the exit uses the
+   animation shorthand so it resets the delay to 0) */
+#projects .mini-grid .mini.in:nth-child(2){animation-delay:.07s}
+#projects .mini-grid .mini.in:nth-child(3){animation-delay:.14s}
+#projects .mini-grid .mini.in:nth-child(4){animation-delay:.21s}
+#projects .mini-grid .mini.in:nth-child(5){animation-delay:.28s}
+#projects .mini-grid .mini.in:nth-child(6){animation-delay:.35s}
+#projects .mini-grid .mini.in:nth-child(7){animation-delay:.42s}
+#projects .mini-grid .mini.in:nth-child(8){animation-delay:.49s}
+
+/* HUD sweep band dropping over each tile as it lands */
+#projects .card::after,#projects .mini::after{
+  content:'';position:absolute;left:0;right:0;top:0;height:38%;z-index:4;
+  pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent,rgba(0,255,65,.22),rgba(200,255,220,.55),rgba(0,255,65,.22),transparent)}
+#projects .card.in::after,#projects .mini.in::after{
+  animation:hudSweep .9s .06s cubic-bezier(.4,0,.6,1) backwards}
+@keyframes hudSweep{
+  0%{opacity:0;transform:translateY(-130%)}
+  10%{opacity:1}
+  68%{opacity:1}
+  100%{opacity:0;transform:translateY(340%)}
+}
+
+/* group labels: typed out on the console */
+#projects .group-label.in{animation:grpType .78s steps(16,end) backwards}
+@keyframes grpType{
+  0%{opacity:0;clip-path:inset(0 100% 0 0)}
+  7%{opacity:1}
+  100%{opacity:1;clip-path:inset(0 0 0 0)}
+}
+
+/* --- 03 PRACTICE · 对焦 ------------------------------------------------ */
+/* the title racks into focus */
+#practice .sec-head.in{animation:secFocus .8s cubic-bezier(.3,0,.2,1) backwards}
+@keyframes secFocus{
+  0%{opacity:0;filter:blur(13px) brightness(1.7)}
+  55%{opacity:1;filter:blur(4px) brightness(1.25)}
+  80%{filter:blur(1px) brightness(1.05)}
+  100%{opacity:1;filter:none}
+}
+
+/* hero plate pulled in from an out-of-focus, over-scaled frame */
+#practice .prac-hero.in{animation:heroFocus 1.15s cubic-bezier(.2,.85,.25,1) backwards}
+@keyframes heroFocus{
+  0%{opacity:0;transform:scale(1.19);filter:blur(24px) brightness(.3) saturate(.3)}
+  22%{opacity:1;transform:scale(1.15);filter:blur(15px) brightness(.55) saturate(.45)}
+  46%{transform:scale(1.1);filter:blur(7px) brightness(1.2) saturate(.8)}
+  64%{transform:scale(1.035);filter:blur(2.5px) brightness(1.35)}
+  78%{transform:scale(1.012);filter:blur(.6px) brightness(1.06)}
+  90%{transform:scale(1.003);filter:blur(0) brightness(1)}
+  100%{opacity:1;transform:scale(1);filter:none}
+}
+
+/* the strips roll in from the far side and snap into focus */
+#practice .mq2.in{animation:mqFocus .95s cubic-bezier(.2,.85,.25,1) backwards}
+#practice .prac-cat.rev .mq2.in{animation-name:mqFocusRev}
+@keyframes mqFocus{
+  0%{opacity:0;transform:translateX(44px) scale(.975);filter:blur(13px) brightness(.45) saturate(.4)}
+  40%{opacity:1;filter:blur(5px) brightness(.95) saturate(.75)}
+  100%{opacity:1;transform:none;filter:none}
+}
+@keyframes mqFocusRev{
+  0%{opacity:0;transform:translateX(-44px) scale(.975);filter:blur(13px) brightness(.45) saturate(.4)}
+  40%{opacity:1;filter:blur(5px) brightness(.95) saturate(.75)}
+  100%{opacity:1;transform:none;filter:none}
+}
+
+/* group labels focus in as well */
+#practice .group-label.in{animation:grpFocus .72s cubic-bezier(.3,0,.2,1) backwards}
+@keyframes grpFocus{
+  0%{opacity:0;filter:blur(10px) brightness(1.5)}
+  60%{opacity:1;filter:blur(2.5px) brightness(1.12)}
+  100%{opacity:1;filter:none}
+}
+
+/* --- 04 CONTACT · 数据流 -------------------------------------------- */
+/* the manifesto floods upward like a rising tide of data — one
+   stutter on the way — then a data band pours down across it */
+#contact .ty-wrap.in{animation:tyFlood 1.15s cubic-bezier(.25,.85,.25,1) backwards}
+@keyframes tyFlood{
+  0%{opacity:0;clip-path:inset(100% 0 0 0);filter:brightness(2.4)}
+  13%{opacity:1;clip-path:inset(80% 0 0 0);filter:brightness(2.1)}
+  34%{clip-path:inset(56% 0 0 0)}
+  39%{clip-path:inset(54% 0 0 0)}          /* stutter */
+  44%{clip-path:inset(48% 0 0 0)}
+  66%{clip-path:inset(25% 0 0 0);filter:brightness(1.75)}
+  86%{clip-path:inset(6% 0 0 0);filter:brightness(1.3)}
+  93%{filter:brightness(2.1)}              /* peak */
+  100%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+}
+#contact .ty::after{content:'';position:absolute;left:-6%;right:-6%;top:-14%;height:14%;z-index:3;
+  pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent,rgba(0,255,65,.3),rgba(220,255,232,.6),rgba(0,255,65,.3),transparent)}
+#contact .ty-wrap.in .ty::after{animation:tyStream 1.2s .1s cubic-bezier(.4,0,.6,1) backwards}
+@keyframes tyStream{
+  0%{opacity:0;top:-14%}
+  12%{opacity:1}
+  78%{opacity:1;top:102%}
+  100%{opacity:0;top:102%}
+}
+
+/* the QR card downloads in steps, like a progressive payload */
+#contact .qr-box.in{animation:qrLoad 1s cubic-bezier(.25,.9,.25,1) .16s backwards}
+@keyframes qrLoad{
+  0%{opacity:0;clip-path:inset(0 0 100% 0);filter:brightness(2.6) saturate(0)}
+  10%{opacity:1;clip-path:inset(0 0 86% 0);filter:brightness(2.2) saturate(.25)}
+  24%{clip-path:inset(0 0 68% 0)}
+  38%{clip-path:inset(0 0 50% 0)}
+  52%{clip-path:inset(0 0 33% 0);filter:brightness(1.7)}
+  68%{clip-path:inset(0 0 17% 0)}
+  84%{clip-path:inset(0 0 5% 0);filter:brightness(1.45)}
+  92%{filter:brightness(2.2)}
+  100%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+}
+
+/* ==========================================================
+   SECTION EXITS — each story unwinds the way it wound up, so
+   scrolling back replays the entrance in reverse. Triggered
+   while ~12% of the element is still on screen, so the exit is
+   actually visible instead of happening off-canvas.
+   ========================================================== */
+
+/* generic exit for everything without a bespoke move */
+.rv.out{opacity:0;transform:translateY(-26px);filter:blur(2px) brightness(1.7)}
+
+/* --- 01 ABOUT · the folio closes again --- */
+#about .profile.out{animation:profClose .72s cubic-bezier(.5,0,.85,.25) both;
+  transform-origin:left center;backface-visibility:hidden}
+@keyframes profClose{
+  0%{opacity:1;transform:perspective(1500px) rotateY(0deg);filter:none}
+  16%{transform:perspective(1500px) rotateY(6deg);filter:brightness(1.6)}
+  100%{opacity:0;transform:perspective(1500px) rotateY(-86deg) translateX(-20px);filter:brightness(.35)}
+}
+#about .about-bio.out{animation:bioClose .62s cubic-bezier(.5,0,.85,.25) both}
+@keyframes bioClose{
+  0%{opacity:1;clip-path:inset(0 0 0 0)}
+  100%{opacity:0;clip-path:inset(0 50% 0 50%)}
+}
+/* the list itself must stay visible so its rows can animate out */
+#about .adv-list.out{opacity:1;transform:none;filter:none}
+#about .adv-list.out .adv-row{animation:advClose .5s cubic-bezier(.5,0,.85,.25) both;
+  transform-origin:top center}
+#about .adv-list.out .adv-row:nth-child(1){animation-delay:0s}
+#about .adv-list.out .adv-row:nth-child(2){animation-delay:.06s}
+#about .adv-list.out .adv-row:nth-child(3){animation-delay:.12s}
+@keyframes advClose{
+  0%{opacity:1;transform:perspective(1000px) rotateX(0deg);filter:none}
+  30%{filter:brightness(1.6)}
+  100%{opacity:0;transform:perspective(1000px) rotateX(-80deg);filter:brightness(.4)}
+}
+#about .xp-term.out{animation:xpClose .66s cubic-bezier(.5,0,.85,.25) both}
+@keyframes xpClose{
+  0%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+  18%{filter:brightness(2.2)}
+  100%{opacity:0;clip-path:inset(50% 0 50% 0);filter:brightness(1.4)}
+}
+#about .sec-head.out{animation:secClose .58s cubic-bezier(.5,0,.85,.25) both}
+@keyframes secClose{
+  0%{opacity:1;clip-path:inset(0 0 0 0)}
+  100%{opacity:0;clip-path:inset(0 50% 0 50%)}
+}
+
+/* --- 02 PROJECTS · the connection is severed, line by line --- */
+#projects .sec-head.out{animation:secUnType .6s steps(14,end) both}
+@keyframes secUnType{
+  0%{opacity:1;clip-path:inset(0 0 0 0)}
+  100%{opacity:0;clip-path:inset(0 100% 0 0)}
+}
+#projects .card.out{animation:cardSever .7s steps(9,end) both}
+@keyframes cardSever{
+  0%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+  14%{filter:sepia(.5) hue-rotate(-38deg) saturate(3.4) brightness(1.7)}
+  40%{clip-path:inset(0 0 26% 0);filter:sepia(.45) hue-rotate(-28deg) saturate(2.6) brightness(1.6)}
+  66%{clip-path:inset(0 0 58% 0);filter:sepia(.2) hue-rotate(40deg) saturate(1.8) brightness(1.4)}
+  86%{clip-path:inset(0 0 84% 0);filter:hue-rotate(20deg) saturate(1.1) brightness(1.5)}
+  100%{opacity:0;clip-path:inset(0 0 100% 0);filter:brightness(2.2)}
+}
+#projects .mini.out{animation:miniSever .64s cubic-bezier(.5,0,.85,.25) both}
+@keyframes miniSever{
+  0%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+  16%{filter:brightness(2.6) hue-rotate(-32deg) saturate(2.6)}
+  100%{opacity:0;clip-path:inset(48% 48% 48% 48%);filter:brightness(2.6)}
+}
+#projects .group-label.out{animation:grpUnType .5s steps(14,end) both}
+@keyframes grpUnType{
+  0%{opacity:1;clip-path:inset(0 0 0 0)}
+  100%{opacity:0;clip-path:inset(0 100% 0 0)}
+}
+
+/* --- 03 PRACTICE · the lens racks back out --- */
+#practice .sec-head.out{animation:secDefocus .55s ease-in both}
+@keyframes secDefocus{
+  0%{opacity:1;filter:none}
+  100%{opacity:0;filter:blur(11px) brightness(1.5)}
+}
+#practice .prac-hero.out{animation:heroDefocus .72s cubic-bezier(.5,0,.85,.25) both}
+@keyframes heroDefocus{
+  0%{opacity:1;transform:scale(1);filter:none}
+  30%{transform:scale(1.03);filter:blur(4px) brightness(1.3)}
+  100%{opacity:0;transform:scale(1.19);filter:blur(26px) brightness(.35) saturate(.35)}
+}
+#practice .mq2.out{animation:mqUnfocus .62s cubic-bezier(.5,0,.85,.25) both}
+#practice .prac-cat.rev .mq2.out{animation-name:mqUnfocusRev}
+@keyframes mqUnfocus{
+  0%{opacity:1;transform:none;filter:none}
+  100%{opacity:0;transform:translateX(44px) scale(.975);filter:blur(14px) brightness(.45) saturate(.4)}
+}
+@keyframes mqUnfocusRev{
+  0%{opacity:1;transform:none;filter:none}
+  100%{opacity:0;transform:translateX(-44px) scale(.975);filter:blur(14px) brightness(.45) saturate(.4)}
+}
+#practice .group-label.out{animation:grpDefocus .5s ease-in both}
+@keyframes grpDefocus{
+  0%{opacity:1;filter:none}
+  100%{opacity:0;filter:blur(9px) brightness(1.4)}
+}
+
+/* --- 04 CONTACT · the data tide drains away --- */
+#contact .ty-wrap.out{animation:tyDrain .68s cubic-bezier(.5,0,.85,.25) both}
+@keyframes tyDrain{
+  0%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+  20%{filter:brightness(1.9)}
+  100%{opacity:0;clip-path:inset(0 0 100% 0);filter:brightness(.6)}
+}
+#contact .qr-box.out{animation:qrDrain .62s cubic-bezier(.5,0,.85,.25) both}
+@keyframes qrDrain{
+  0%{opacity:1;clip-path:inset(0 0 0 0);filter:none}
+  18%{filter:brightness(2.1)}
+  100%{opacity:0;clip-path:inset(0 0 100% 0);filter:brightness(1.8)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .rv,.rv.out{opacity:1;transform:none;filter:none}
+  #about .sec-head.in,#about .profile.in,#about .about-bio.in,
+  #about .adv-list.in .adv-row,#about .xp-term.in,
+  #projects .sec-head.in,#projects .card.in,#projects .card.in::before,
+  #projects .mini.in,#projects .card.in::after,#projects .mini.in::after,
+  #projects .group-label.in,
+  #practice .sec-head.in,#practice .prac-hero.in,#practice .mq2.in,
+  #practice .prac-cat.rev .mq2.in,#practice .group-label.in,
+  #contact .ty-wrap.in,#contact .ty-wrap.in .ty::after,#contact .qr-box.in,
+  #about .sec-head.out,#about .profile.out,#about .about-bio.out,
+  #about .adv-list.out .adv-row,#about .xp-term.out,
+  #projects .sec-head.out,#projects .card.out,#projects .mini.out,#projects .group-label.out,
+  #practice .sec-head.out,#practice .prac-hero.out,#practice .mq2.out,
+  #practice .prac-cat.rev .mq2.out,#practice .group-label.out,
+  #contact .ty-wrap.out,#contact .qr-box.out{animation:none}
+  #about .profile::after,#contact .ty::after,#contact::before,#contact::after{display:none}
+  #contact::before,#contact::after{animation:none}
+}
+
+/* ---------- about : one-screen compact dossier ---------- */
+#about{max-width:none;min-height:100vh;padding:78px clamp(24px,4vw,72px) 62px;box-sizing:border-box}
+/* projects + practice run edge-to-edge and full-height like hero / about */
+#projects,#practice{max-width:none;min-height:100vh;padding:96px clamp(24px,4vw,72px) 88px;box-sizing:border-box}
+#about .sec-head{margin-bottom:22px}
+.about-grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:34px;align-items:start}
+
+/* portrait card */
+.profile{border:1px solid var(--line);padding:16px;background:rgba(0,0,0,.35);position:relative;align-self:start}
+.profile::before{content:'ID_CARD.001';position:absolute;top:-9px;left:18px;background:var(--bg);
+  padding:0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acid)}
+/* portrait + name sit side by side so the card stays short */
+.p-top{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:end}
+.p-photo{position:relative;overflow:hidden;border:1px solid var(--line);
+  box-shadow:0 0 26px rgba(0,255,65,.14)}
+.p-photo img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 22%;display:block;
+  transition:.4s}
+.p-photo:hover img{filter:brightness(1.06) saturate(1.05)}
+/* keep the panel readable : a whisper of scanline, never a colour cast */
+.p-photo::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.045) 0 1px,transparent 1px 4px)}
+.p-name{font-family:var(--mega);font-weight:400;font-size:30px;letter-spacing:.03em;
+  color:#f2f5f0;text-transform:uppercase;line-height:1.1}
+.p-name i{font-style:normal;color:var(--acid)}
+.p-role{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);margin-top:8px;line-height:1.7}
+
+.term-block{border:1px solid var(--line);margin-top:10px;background:rgba(0,0,0,.3)}
+.term-head{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--acid);
+  border-bottom:1px solid var(--line);padding:7px 13px;display:flex;gap:10px;align-items:center}
+.term-head::before{content:'>';color:var(--acid)}
+.term-head span{margin-left:auto;color:var(--faint);font-size:9px}
+.term-body{padding:10px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.9;letter-spacing:.03em}
+.term-body .row{display:flex;gap:10px;color:#c9d4ca}
+.term-body .row::before{content:'>';color:var(--acid-dim);flex:none}
+.term-body .row i{font-style:normal;color:var(--dim);width:38px;flex:none}
+.skill-line{font-family:var(--mono);font-size:11.5px;line-height:1.95;letter-spacing:.03em}
+.skill-line b{color:var(--acid);font-weight:400}
+.skill-line b::after{content:'_';animation:blink 1.2s steps(1) infinite}
+
+/* right column */
+.about-bio{font-size:13.5px;line-height:1.95;color:#b9c4ba;font-weight:300;margin:0;
+  border-left:2px solid var(--acid);padding-left:18px}
+.about-bio b{color:var(--acid);font-weight:500}
+.about-main .group-label{margin:14px 0 10px}
+.adv-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.adv-row{display:flex;gap:13px;padding:8px 14px;border-bottom:1px solid var(--line);align-items:baseline;transition:.2s}
+.adv-row:last-child{border-bottom:0}
+.adv-row:hover{background:rgba(0,255,65,.05)}
+.adv-row s{text-decoration:none;font-family:var(--mono);color:var(--acid);font-size:10px;flex:none;
+  border:1px solid var(--acid-line);padding:1px 6px}
+.adv-row b{font-size:12.5px;font-weight:700;color:#e8f5e9;display:block;margin-bottom:2px}
+.adv-row span{font-size:11.5px;line-height:1.75;color:var(--dim);font-weight:300}
+
+/* experience terminal */
+.xp-term{border:1px solid var(--acid-line);background:rgba(0,0,0,.5);margin-top:16px;
+  box-shadow:0 0 40px rgba(0,255,65,.06) inset;
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.xp-term-top{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--acid);
+  padding:8px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+.xp-term-top::before{content:'';width:7px;height:7px;background:var(--acid);
+  box-shadow:0 0 10px rgba(0,255,65,.8);animation:blink 1.6s steps(1) infinite}
+.xp-term-top s{text-decoration:none;color:var(--faint);font-size:9px;margin-left:auto}
+.xp-tabs{display:flex;border-bottom:1px solid var(--line)}
+.xp-tab{flex:1;background:none;border:0;border-right:1px solid var(--line);cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);padding:9px;transition:.2s;position:relative}
+.xp-tab:last-child{border-right:0}
+.xp-tab s{text-decoration:none;color:var(--acid-dim);margin-right:8px}
+.xp-tab.on{color:var(--acid);background:rgba(0,255,65,.07)}
+.xp-tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acid);box-shadow:0 0 8px rgba(0,255,65,.8)}
+.xp-panel{display:none}
+.xp-panel.on{display:block}
+/* the log scrolls inside a fixed window so the dossier stays one screen tall */
+.xp-scroll{max-height:min(560px,calc(100vh - 590px));min-height:150px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--acid-dim) transparent}
+.xp-scroll::-webkit-scrollbar{width:5px}
+.xp-scroll::-webkit-scrollbar-track{background:rgba(0,255,65,.04)}
+.xp-scroll::-webkit-scrollbar-thumb{background:var(--acid-dim)}
+.acc{border-bottom:1px solid var(--line)}
+.acc:last-child{border-bottom:0}
+.acc-head{width:100%;display:flex;align-items:center;gap:14px;background:none;border:0;cursor:pointer;
+  padding:10px 16px;text-align:left;transition:.2s;font-family:var(--mono)}
+.acc-head:hover{background:rgba(0,255,65,.04)}
+.acc-head em{font-style:normal;font-size:10.5px;letter-spacing:.08em;color:var(--dim);flex:none;width:112px}
+.acc-head b{font-size:15.5px;font-weight:700;color:#eef4ef;letter-spacing:.03em;flex:1;font-family:var(--sans)}
+.acc-head b s{text-decoration:none;color:var(--acid);font-size:12px;font-weight:400;margin-left:10px}
+.acc-x{position:relative;flex:none;width:16px;height:16px;border:1px solid var(--acid-line);transition:.4s}
+.acc-x::before,.acc-x::after{content:'';position:absolute;left:50%;top:50%;background:var(--acid);transition:.4s}
+.acc-x::before{width:7px;height:1px;transform:translate(-50%,-50%)}
+.acc-x::after{width:1px;height:7px;transform:translate(-50%,-50%)}
+.acc.open .acc-x{transform:rotate(135deg);border-color:var(--acid);box-shadow:0 0 10px rgba(0,255,65,.4)}
+.acc-body{display:grid;grid-template-rows:0fr;visibility:hidden;
+  transition:grid-template-rows .5s cubic-bezier(.22,1,.36,1),visibility 0s .5s}
+.acc.open .acc-body{grid-template-rows:1fr;visibility:visible;transition-delay:0s}
+.acc-body > div{overflow:hidden;min-height:0}
+.acc-desc{margin:0 16px 12px 134px;padding:12px 16px;font-size:12.5px;line-height:1.95;color:#b3bfb5;
+  font-weight:300;border-left:2px solid var(--acid-line);background:rgba(0,255,65,.03)}
+.xp-status{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--acid-dim);
+  padding:8px 16px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.xp-status::before{content:'>';color:var(--acid)}
+@media (max-height:820px){
+  .about-grid{grid-template-columns:minmax(0,400px) minmax(0,1fr)}
+  .p-top{grid-template-columns:216px minmax(0,1fr);gap:14px}
+  .p-name{font-size:26px}
+  .p-role{font-size:9px;margin-top:5px}
+  .term-head{font-size:10px;padding:6px 12px}
+  .term-body{padding:8px 12px;font-size:10.5px;line-height:1.75}
+  .skill-line{font-size:10.5px}
+  .profile{padding:13px}
+}
+
+/* ---------- projects ---------- */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.card{border:1px solid var(--line);background:#050705;transition:.25s;position:relative;overflow:hidden}
+.card:hover{border-color:var(--acid);box-shadow:0 0 26px rgba(0,255,65,.14);transform:translateY(-4px)}
+.card .im{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.card .im img{width:100%;aspect-ratio:16/9;object-fit:cover;
+  filter:grayscale(.85) contrast(1.12) brightness(.92);transition:.4s}
+.card:hover .im img{filter:grayscale(0) contrast(1.05);transform:scale(1.03)}
+.card .im::before{content:'[VIEW_]';position:absolute;z-index:2;left:12px;bottom:10px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--acid);
+  background:rgba(3,5,3,.85);padding:3px 8px;opacity:0;transition:.25s}
+.card:hover .im::before{opacity:1}
+.card .bd{padding:16px 18px 18px}
+.card h4{font-size:15px;font-weight:700;color:#e8f5e9;letter-spacing:.04em;display:flex;justify-content:space-between;align-items:baseline}
+.card h4 s{text-decoration:none;font-family:var(--mono);font-size:10px;color:var(--acid);font-weight:400}
+.card .tags{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--acid-dim);margin:8px 0 10px}
+.card p{font-size:12px;line-height:1.95;color:var(--dim);font-weight:300}
+
+.mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;justify-content:start}
+.mini{border:1px solid var(--line);background:#050705;transition:.25s;position:relative;overflow:hidden;cursor:pointer}
+.mini:hover{border-color:var(--acid);box-shadow:0 0 20px rgba(0,255,65,.12);transform:translateY(-3px)}
+.mini:active{transform:translateY(-1px) scale(.99)}
+.mini img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 20%;
+  filter:grayscale(.85) contrast(1.1) brightness(.9);transition:.4s}
+.mini:hover img{filter:grayscale(0);transform:scale(1.04)}
+.mini::before{content:'[OPEN_]';position:absolute;z-index:2;left:12px;top:12px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--acid);
+  background:rgba(3,5,3,.85);padding:3px 8px;opacity:0;transition:.25s}
+.mini:hover::before{opacity:1}
+.mini .cap{padding:13px 15px;font-family:var(--mono);font-weight:500;font-size:13.5px;letter-spacing:.02em;color:#dbe4db;line-height:1.35}
+.mini .cap s{text-decoration:none;display:block;color:var(--acid-dim);font-size:11px;margin-top:5px;letter-spacing:.1em}
+
+/* ---------- project detail modal ---------- */
+.card[data-p]{cursor:pointer}
+#pmodal{position:fixed;inset:0;z-index:220;background:rgba(2,4,2,.97);display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+#pmodal.on{opacity:1;visibility:visible;transition:opacity .35s,visibility 0s}
+#pmodal::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    repeating-linear-gradient(to bottom,rgba(0,255,65,.028) 0 2px,transparent 2px 6px),
+    linear-gradient(rgba(0,255,65,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,65,.05) 1px,transparent 1px);
+  background-size:auto,54px 54px,54px 54px}
+body.pmlock{overflow:hidden}
+.pm-head{flex:none;display:flex;align-items:baseline;gap:16px;position:relative;z-index:2;
+  padding:18px clamp(20px,4vw,56px);border-bottom:1px solid var(--line);background:rgba(3,5,3,.92)}
+.pm-idx{font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--acid);flex:none}
+.pm-title{font-family:var(--mega);font-weight:400;font-size:clamp(19px,2.1vw,28px);letter-spacing:.05em;color:#eef4ef}
+.pm-title s{text-decoration:none;font-family:var(--mono);font-size:12px;color:var(--acid);margin-left:12px}
+.pm-tags{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--acid-dim);flex:none}
+.pm-close{margin-left:auto;flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--acid);
+  background:none;border:1px solid var(--acid-line);padding:7px 14px;cursor:pointer;transition:.2s;align-self:center}
+.pm-close:hover{background:var(--acid);color:#000;box-shadow:0 0 18px rgba(0,255,65,.5)}
+.pm-meta{flex:none;display:flex;gap:34px;position:relative;z-index:2;flex-wrap:wrap;
+  padding:14px clamp(20px,4vw,56px);border-bottom:1px solid var(--line);background:rgba(3,5,3,.6)}
+.pm-meta div{font-family:var(--mono);font-size:11px;line-height:1.9;letter-spacing:.06em;color:#b9c4ba;max-width:560px}
+.pm-meta div i{font-style:normal;display:block;font-size:9px;letter-spacing:.24em;color:var(--faint);margin-bottom:2px}
+.pm-meta div b{color:var(--acid);font-weight:400}
+.pm-body{flex:1;overflow-y:auto;position:relative;z-index:2;
+  padding:20px clamp(12px,2vw,30px) 70px;scrollbar-width:thin;scrollbar-color:var(--acid-dim) transparent}
+/* edge-to-edge collage : positions come from the JS skyline packer, so the wall
+   always spans the full width and gutters stay between -5px / +9px */
+.pm-collage{position:relative;width:100%;margin:0 auto}
+.pm-fig{position:absolute;left:0;top:0;margin:0;min-width:0}
+.pm-fig img{width:100%;display:block;box-sizing:border-box;border:1px solid rgba(0,255,65,.16);background:#0a0d0a;
+  box-shadow:0 16px 54px rgba(0,0,0,.6);transition:border-color .3s,box-shadow .3s}
+.pm-fig:hover img{border-color:var(--acid);box-shadow:0 16px 54px rgba(0,255,65,.12)}
+/* laser-scan reveal : a bright beam sweeps each shot top→bottom while the
+   image de-classifies line by line underneath it (backwards fill → static
+   state keeps no clip, so hover glow / box-shadow stay intact) */
+.pm-fig::after{content:'';position:absolute;left:0;right:0;top:-3px;height:7px;z-index:3;pointer-events:none;
+  opacity:0;
+  background:linear-gradient(180deg,rgba(0,255,65,0),rgba(200,255,215,.95) 42%,#00ff41 58%,rgba(0,255,65,0));
+  box-shadow:0 0 14px rgba(0,255,65,.95),0 0 46px rgba(0,255,65,.5)}
+#pmodal.on .pm-fig{animation:pmLaser .95s cubic-bezier(.3,.65,.25,1) backwards}
+#pmodal.on .pm-fig img{animation:pmHot .95s cubic-bezier(.3,.65,.25,1) backwards}
+#pmodal.on .pm-fig::after{animation:pmBeam .95s cubic-bezier(.3,.65,.25,1) backwards}
+#pmodal.on .pm-fig:nth-child(3n+2),#pmodal.on .pm-fig:nth-child(3n+2) img,#pmodal.on .pm-fig:nth-child(3n+2)::after{animation-delay:.09s}
+#pmodal.on .pm-fig:nth-child(3n),#pmodal.on .pm-fig:nth-child(3n) img,#pmodal.on .pm-fig:nth-child(3n)::after{animation-delay:.18s}
+@keyframes pmLaser{
+  0%{opacity:0;clip-path:inset(0 0 100% 0)}
+  14%{opacity:1}
+  88%{clip-path:inset(0 0 0 0)}
+  100%{opacity:1;clip-path:inset(0 0 0 0)}
+}
+@keyframes pmHot{
+  0%{filter:brightness(2.4) contrast(1.25) saturate(.35)}
+  45%{filter:brightness(1.55) contrast(1.1) saturate(.7)}
+  100%{filter:none}
+}
+@keyframes pmBeam{
+  0%{opacity:0;transform:translateY(0)}
+  9%{opacity:1}
+  84%{opacity:1}
+  100%{opacity:0;transform:translateY(var(--lh,320px))}
+}
+.pm-foot{flex:none;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;
+  padding:13px clamp(20px,4vw,56px);border-top:1px solid var(--line);background:rgba(3,5,3,.92)}
+.pm-hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--faint)}
+.pm-switch{display:flex;gap:10px}
+.pm-switch button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink);
+  background:none;border:1px solid var(--line);padding:8px 16px;cursor:pointer;transition:.2s}
+.pm-switch button:hover:not(:disabled){border-color:var(--acid);color:var(--acid)}
+.pm-switch button:disabled{opacity:.25;cursor:default}
+
+/* ---------- mini project window : terminal-style popup ---------- */
+#hmodal{position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:4vh 3vw;
+  opacity:0;visibility:hidden;transition:opacity .26s,visibility 0s .26s}
+#hmodal.on{opacity:1;visibility:visible;transition:opacity .16s,visibility 0s}
+.hm-veil{position:absolute;inset:0;background:rgba(1,2,1,.84);backdrop-filter:blur(4px)}
+.hm-veil::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.06) 0 1px,transparent 1px 4px)}
+.hm-win{position:relative;width:min(1180px,94vw);height:min(760px,88vh);display:flex;flex-direction:column;overflow:hidden;
+  background:linear-gradient(180deg,rgba(4,9,5,.99),rgba(2,5,3,.99));
+  border:1px solid var(--acid-line);clip-path:inset(0);
+  box-shadow:0 0 0 1px rgba(0,255,65,.05),0 46px 130px rgba(0,0,0,.9),0 0 110px rgba(0,255,65,.12)}
+#hmodal.on .hm-win{animation:hmOpen .46s cubic-bezier(.76,0,.24,1) both}
+#hmodal.closing .hm-win{animation:hmClose .26s cubic-bezier(.6,0,.9,.3) both}
+@keyframes hmOpen{from{clip-path:inset(49.7% 0 49.7% 0);opacity:.35}
+  55%{opacity:1}to{clip-path:inset(0 0 0 0);opacity:1}}
+@keyframes hmClose{from{clip-path:inset(0 0 0 0);opacity:1}to{clip-path:inset(49.7% 0 49.7% 0);opacity:0}}
+.hm-scan{position:absolute;left:0;right:0;top:0;height:2px;z-index:8;pointer-events:none;opacity:0;
+  background:var(--acid);box-shadow:0 0 26px 7px rgba(0,255,65,.6)}
+#hmodal.on .hm-scan{animation:hmScan .5s .08s ease-out}
+@keyframes hmScan{0%{top:0;opacity:1}82%{opacity:.8}100%{top:100%;opacity:0}}
+.hm-cor{position:absolute;inset:6px;z-index:6;pointer-events:none;opacity:0}
+#hmodal.on .hm-cor,#hmodal.closing .hm-cor{animation:hmFade .3s .34s both}
+@keyframes hmFade{to{opacity:1}}
+.hm-cor i{position:absolute;width:17px;height:17px;border:1px solid var(--acid)}
+.hm-cor i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}
+.hm-cor i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+.hm-cor i:nth-child(3){right:0;bottom:0;border-left:0;border-top:0}
+.hm-cor i:nth-child(4){left:0;bottom:0;border-right:0;border-top:0}
+.hm-bar{flex:none;display:flex;align-items:center;gap:12px;position:relative;z-index:3;
+  padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(6,12,7,.95)}
+.hm-dots{display:flex;gap:6px;flex:none}
+.hm-dots i{width:8px;height:8px;border:1px solid var(--acid);display:block}
+.hm-dots i:first-child{background:var(--acid)}
+.hm-path{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#9fb3a2;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-path em{font-style:normal;color:var(--acid)}
+.hm-caret{display:inline-block;width:7px;height:13px;background:var(--acid);margin-left:3px;
+  vertical-align:-2px;animation:hmBlink .9s steps(1,end) infinite}
+@keyframes hmBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.hm-x{flex:none;width:26px;height:22px;line-height:1;font-family:var(--mono);font-size:15px;color:var(--acid);
+  background:none;border:1px solid var(--acid-line);cursor:pointer;transition:.18s}
+.hm-x:hover{background:var(--acid);color:#000;box-shadow:0 0 16px rgba(0,255,65,.55)}
+.hm-info{flex:none;display:flex;align-items:baseline;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  padding:15px 20px 12px;position:relative;z-index:3;border-bottom:1px solid rgba(0,255,65,.1);opacity:0}
+#hmodal.on .hm-info{animation:hmRise .4s .24s both}
+#hmodal.closing .hm-info{opacity:1;animation:none}
+.hm-name{font-family:var(--mega);font-weight:400;font-size:clamp(19px,2.3vw,31px);letter-spacing:.04em;color:#eef4ef}
+.hm-name s{text-decoration:none;display:block;margin-top:4px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acid)}
+.hm-met{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--acid-dim);text-align:right}
+.hm-stage{flex:1;min-height:0;display:flex;align-items:center;position:relative;z-index:3;
+  overflow-x:auto;overflow-y:hidden;padding:16px 0 12px;
+  scrollbar-width:thin;scrollbar-color:var(--acid-dim) rgba(0,255,65,.06)}
+.hm-stage::-webkit-scrollbar{height:7px}
+.hm-stage::-webkit-scrollbar-track{background:rgba(0,255,65,.06);border-top:1px solid rgba(0,255,65,.12)}
+.hm-stage::-webkit-scrollbar-thumb{background:var(--acid-dim);border:1px solid rgba(0,255,65,.35)}
+.hm-stage::-webkit-scrollbar-thumb:hover{background:var(--acid)}
+.hm-track{display:flex;align-items:center;gap:12px;flex:none;padding:0 20px}
+.hm-pic{flex:none;margin:0;position:relative;opacity:0;overflow:hidden;
+  border:1px solid rgba(0,255,65,.18);background:#0a0d0a;box-shadow:0 14px 44px rgba(0,0,0,.7);
+  transition:border-color .25s,box-shadow .25s}
+.hm-pic img{display:block;width:100%;height:100%;object-fit:contain}
+.hm-pic:hover{border-color:var(--acid);box-shadow:0 14px 44px rgba(0,255,65,.16)}
+.hm-pic::after{content:attr(data-tag);position:absolute;left:0;right:0;bottom:0;
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--acid);background:rgba(2,6,3,.86);
+  padding:3px 6px;opacity:0;transition:.22s}
+.hm-pic:hover::after{opacity:1}
+#hmodal.on .hm-pic{animation:hmPic .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(.28s + var(--i,0) * .05s)}
+#hmodal.closing .hm-pic{opacity:1;animation:none}
+@keyframes hmPic{from{opacity:0;transform:translateY(16px) scaleY(.94)}to{opacity:1;transform:none}}
+.hm-foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:3;
+  padding:9px 20px;border-top:1px solid var(--line);background:rgba(6,12,7,.9);opacity:0}
+#hmodal.on .hm-foot{animation:hmRise .4s .38s both}
+#hmodal.closing .hm-foot{opacity:1;animation:none}
+@keyframes hmRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hm-log{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--acid-dim)}
+.hm-tip{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint)}
+/* viewport-aware hint copy : keyboard/mouse wording on desktop, touch wording on phones */
+.hm-tip i,.pm-hint i{font-style:normal}
+.tip-m{display:none}
+body.hmlock{overflow:hidden}
+
+/* ---------- practice : pinned hero + dual-row mini marquee ---------- */
+.prac-cat{--mq-h:185px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:stretch}
+.prac-cat.rev{grid-template-columns:minmax(0,1fr) auto}
+.prac-hero{position:relative;margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:#050705;height:calc(var(--mq-h)*2 + 16px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.prac-hero img{display:block;height:100%;width:auto;max-width:none;
+  transition:transform .5s cubic-bezier(.2,.9,.3,1)}
+.prac-hero:hover img{transform:scale(1.015)}
+.prac-hero::after{content:attr(data-tag);position:absolute;left:14px;bottom:12px;z-index:3;
+  font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--acid);
+  background:rgba(3,5,3,.74);border:1px solid rgba(0,255,65,.32);padding:5px 10px;border-radius:6px}
+.prac-hero::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.04) 0 2px,transparent 2px 7px)}
+.mq2{display:flex;flex-direction:column;gap:16px;min-width:0}
+.marquee{position:relative;overflow:hidden;height:var(--mq-h)}
+.marquee::before,.marquee::after{content:'';position:absolute;top:0;bottom:0;width:min(120px,9vw);z-index:4;pointer-events:none}
+.marquee::before{left:0;background:linear-gradient(90deg,rgba(3,5,3,.92),rgba(3,5,3,0))}
+.marquee::after{right:0;background:linear-gradient(270deg,rgba(3,5,3,.92),rgba(3,5,3,0))}
+.mq-track{display:flex;width:max-content;height:100%;animation:mqLeft 90s linear infinite;will-change:transform}
+.marquee[data-dir="right"] .mq-track{animation-name:mqRight}
+.prac-cat:hover .mq-track{animation-play-state:paused}
+@keyframes mqLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mqRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.mq-set{display:flex;flex:none;height:100%}
+.mq-set figure{position:relative;flex:none;height:100%;margin:0 14px 0 0;border-radius:12px;overflow:hidden;
+  border:1px solid var(--line);background:#050705;box-shadow:0 10px 26px rgba(0,0,0,.5);
+  transition:transform .32s cubic-bezier(.2,.9,.3,1),border-color .32s,box-shadow .32s}
+.mq-set figure:hover{z-index:5;transform:scale(1.06);border-color:var(--acid);
+  box-shadow:0 18px 46px rgba(0,0,0,.7),0 0 30px rgba(0,255,65,.24)}
+.mq-set figure img{display:block;height:100%;width:auto}
+.mq-set figure::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.05) 0 2px,transparent 2px 6px);opacity:0;transition:.3s}
+.mq-set figure:hover::after{opacity:1}
+
+/* ---------- footer ---------- */
+footer{position:relative;z-index:3;border-top:1px solid var(--line);padding:100px clamp(24px,5vw,110px) 40px;overflow:hidden}
+/* 数据流 : a drifting data grid + a slow vertical fall, both behind the copy */
+#contact::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(90deg,rgba(0,255,65,.075) 1px,transparent 1px),
+    linear-gradient(180deg,rgba(0,255,65,.05) 1px,transparent 1px);
+  background-size:44px 100%,100% 28px;
+  animation:dataDrift 7s linear infinite;
+  -webkit-mask-image:radial-gradient(130% 108% at 34% 52%,#000 0,rgba(0,0,0,.35) 56%,transparent 84%);
+  mask-image:radial-gradient(130% 108% at 34% 52%,#000 0,rgba(0,0,0,.35) 56%,transparent 84%)}
+@keyframes dataDrift{to{background-position:44px 0,0 28px}}
+#contact::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.34;
+  background-image:repeating-linear-gradient(180deg,rgba(0,255,65,.1) 0 3px,transparent 3px 18px);
+  animation:dataFall 1.8s linear infinite;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 24%,#000 76%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 24%,#000 76%,transparent)}
+@keyframes dataFall{to{background-position:0 18px}}
+.ft-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:44px;align-items:center}
+.ft-left{min-width:0}
+/* binary confetti, like the reference top-left */
+.ft-bin{font-family:var(--mono);font-size:10px;line-height:2;letter-spacing:.24em;
+  color:rgba(0,255,65,.34);margin-bottom:30px;user-select:none}
+/* corner brackets + glitch bar accents framing the title */
+.ty-wrap{position:relative;display:inline-block;padding:30px 40px;margin:-30px -40px}
+.ck{position:absolute;width:24px;height:24px;border:0 solid var(--acid);opacity:.85}
+.ck-tl{left:0;top:0;border-left-width:2px;border-top-width:2px}
+.ck-tr{right:0;top:0;border-right-width:2px;border-top-width:2px}
+.ck-bl{left:0;bottom:0;border-left-width:2px;border-bottom-width:2px}
+.ck-br{right:0;bottom:0;border-right-width:2px;border-bottom-width:2px}
+.ty-wrap::before{content:'';position:absolute;right:-34px;top:26%;width:30px;height:8px;
+  background:rgba(0,255,65,.55);box-shadow:0 30px 0 -2px rgba(0,255,65,.3),0 62px 2px 3px rgba(0,255,65,.18)}
+.ty-wrap::after{content:'';position:absolute;left:-40px;bottom:30%;width:18px;height:6px;
+  background:rgba(0,255,65,.4);box-shadow:0 -34px 0 4px rgba(0,255,65,.22),0 -66px 1px 1px rgba(0,255,65,.14)}
+.ty{font-family:var(--mega);font-weight:900;font-size:clamp(48px,8.5vw,130px);line-height:1;
+  color:#f2f5f0;text-transform:uppercase;letter-spacing:.01em;position:relative;z-index:2;
+  text-shadow:-6px -8px 0 rgba(0,255,65,.2),-12px -16px 0 rgba(0,255,65,.075)}
+/* the glitch layers carry no shadow of their own — the plate does that job */
+#contact .flip .fw::before,#contact .flip .fw::after{text-shadow:none}
+/* back plate sitting up-left of the headline, so the corner reads full */
+.ty-plate{position:absolute;left:0;top:0;width:min(52%,600px);height:64%;z-index:1;pointer-events:none;
+  border-left:2px solid rgba(0,255,65,.45);
+  background:
+    repeating-linear-gradient(90deg,rgba(0,255,65,.22) 0 1px,transparent 1px 15px),
+    repeating-linear-gradient(180deg,rgba(0,255,65,.14) 0 1px,transparent 1px 15px),
+    linear-gradient(180deg,rgba(0,255,65,.11),rgba(0,255,65,.02));
+  clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%)}
+.ty-plate::after{content:'';position:absolute;right:9px;top:9px;width:44px;height:4px;
+  background:rgba(0,255,65,.5);box-shadow:0 10px 0 -1px rgba(0,255,65,.28),0 20px 0 -1px rgba(0,255,65,.16)}
+.ty i{font-style:normal;color:var(--acid)}
+/* flicker word : 反叛 ⇄ 正义 ⇄ 自由 — ERROR-style horizontal slice glitch, single layer */
+.flip{position:relative;display:inline-block;color:var(--acid);transition:color .2s}
+.flip .fw{display:inline-block;position:relative;z-index:2}
+.flip .fw::before,.flip .fw::after{content:attr(data-w);position:absolute;left:0;top:0;width:100%;
+  pointer-events:none;opacity:0}
+.flip.on .fw::before{color:#00e5ff;animation:sliceA .52s steps(1,end) both}
+.flip.on .fw::after{color:#ff0057;animation:sliceB .52s steps(1,end) both}
+.flip .fw.glitch{animation:flipGlitch .52s steps(1,end) both}
+@keyframes flipGlitch{
+  0%{opacity:1;transform:none;filter:none}
+  10%{opacity:0;transform:translateX(-9px) skewX(-9deg)}
+  20%{opacity:1;transform:translateX(6px);filter:blur(1px)}
+  32%{opacity:0;transform:translateX(-5px) skewX(7deg)}
+  46%{opacity:1;transform:translateX(8px);filter:none}
+  56%{opacity:.15;transform:none}
+  66%{opacity:1;transform:translateX(-3px)}
+  78%{opacity:.45;transform:none}
+  88%{opacity:1;filter:blur(.6px)}
+  100%{opacity:1;transform:none;filter:none}
+}
+@keyframes sliceA{
+  0%{opacity:.9;clip-path:inset(18% 0 64% 0);transform:translateX(-10px)}
+  20%{opacity:.85;clip-path:inset(58% 0 12% 0);transform:translateX(9px)}
+  40%{opacity:.9;clip-path:inset(8% 0 74% 0);transform:translateX(-7px)}
+  60%{opacity:.8;clip-path:inset(42% 0 34% 0);transform:translateX(11px)}
+  80%{opacity:.85;clip-path:inset(72% 0 4% 0);transform:translateX(-8px)}
+  100%{opacity:0;clip-path:inset(50% 0 50% 0);transform:none}
+}
+@keyframes sliceB{
+  0%{opacity:.8;clip-path:inset(62% 0 16% 0);transform:translateX(10px)}
+  20%{opacity:.9;clip-path:inset(12% 0 66% 0);transform:translateX(-9px)}
+  40%{opacity:.8;clip-path:inset(50% 0 28% 0);transform:translateX(8px)}
+  60%{opacity:.9;clip-path:inset(4% 0 78% 0);transform:translateX(-11px)}
+  80%{opacity:.8;clip-path:inset(34% 0 44% 0);transform:translateX(7px)}
+  100%{opacity:0;clip-path:inset(50% 0 50% 0);transform:none}
+}
+.ty-sub{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.28em;color:var(--dim);margin-top:28px;padding:10px 18px;border:1px solid var(--line);
+  background:rgba(0,0,0,.35)}
+.ty-sub s{text-decoration:none;color:var(--acid);font-size:13px}
+/* QR card — same chrome as the experience terminal (.xp-term) */
+.qr-box{flex:none;width:212px;border:1px solid var(--acid-line);background:rgba(0,0,0,.5);
+  box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.qr-top{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--acid);
+  padding:8px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.qr-top::before{content:'';width:7px;height:7px;background:var(--acid);box-shadow:0 0 8px var(--acid)}
+.qr-top s{text-decoration:none;color:var(--faint);font-size:9px;margin-left:auto;letter-spacing:.06em}
+.qr-img{padding:16px;background:#0a0d0a;position:relative}
+.qr-img::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,255,65,.05) 0 2px,transparent 2px 6px)}
+.qr-img img{display:block;width:100%;height:auto;image-rendering:pixelated}
+.qr-status{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--acid-dim);
+  padding:8px 12px;border-top:1px solid var(--line)}
+.contact-row{display:flex;flex-wrap:wrap;gap:14px 34px;margin-top:52px;font-family:var(--mono);font-size:12px;letter-spacing:.08em}
+.contact-row a{color:#c9d4ca;border-bottom:1px solid var(--line);padding-bottom:3px;transition:.2s}
+.contact-row a::before{content:'> ';color:var(--acid)}
+.contact-row a:hover{color:var(--acid);border-color:var(--acid)}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+  margin-top:70px;padding-top:22px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint)}
+.barcode{height:26px;width:130px;opacity:.7;
+  background:repeating-linear-gradient(90deg,#cfd8cf 0 2px,transparent 2px 4px,#cfd8cf 4px 7px,transparent 7px 8px,#cfd8cf 8px 9px,transparent 9px 13px)}
+
+/* ---------- ambient HUD decorations (cosmetic only, pointer-safe) ---------- */
+#about,#projects,#practice,#contact{position:relative}
+.dz{position:absolute;z-index:6;pointer-events:none;font-family:var(--mono)}
+.dz-plus{font-size:13px;line-height:1;color:rgba(0,255,65,.4)}
+.dz-x{font-size:11px;line-height:1;color:rgba(0,255,65,.28)}
+.dz-clock{font-size:10px;letter-spacing:.2em;line-height:1.9;color:rgba(200,255,210,.85);
+  padding:8px 12px;background:rgba(3,8,4,.78);border:1px solid rgba(0,255,65,.32);
+  box-shadow:0 0 22px rgba(0,255,65,.1)}
+.dz-clock i{font-style:normal;display:block;font-size:8px;letter-spacing:.32em;color:rgba(0,255,65,.45)}
+.dz-coord{font-size:9px;letter-spacing:.14em;line-height:1.8;padding:7px 10px;
+  color:rgba(140,255,165,.55);background:rgba(0,255,65,.05);border:1px solid rgba(0,255,65,.16)}
+.dz-coord b{display:block;font-weight:400;color:rgba(0,255,65,.8)}
+.dz-vtext{writing-mode:vertical-rl;font-size:8.5px;letter-spacing:.4em;color:rgba(0,255,65,.42);
+  display:flex;align-items:center;gap:10px}
+.dz-vtext::before,.dz-vtext::after{content:'';width:1px;height:34px;background:rgba(0,255,65,.3)}
+.dz-ret{width:26px;height:26px;border:1px solid rgba(0,255,65,.42);border-radius:50%}
+.dz-ret::before,.dz-ret::after{content:'';position:absolute;background:rgba(0,255,65,.5)}
+.dz-ret::before{left:50%;top:-7px;bottom:-7px;width:1px}
+.dz-ret::after{top:50%;left:-7px;right:-7px;height:1px}
+.dz-scn{font-size:8.5px;letter-spacing:.24em;color:rgba(0,255,65,.55)}
+.dz-dots{width:110px;height:54px;opacity:.75;
+  background-image:radial-gradient(rgba(0,255,65,.4) 1px,transparent 1.5px);background-size:11px 11px}
+.dz-bar{height:24px;width:96px;opacity:.6;
+  background:repeating-linear-gradient(90deg,#cfd8cf 0 2px,transparent 2px 4px,#cfd8cf 4px 7px,transparent 7px 8px,#cfd8cf 8px 9px,transparent 9px 13px)}
+.dz-hazard{margin-top:26px;height:15px;opacity:.8;
+  background:repeating-linear-gradient(-45deg,rgba(0,255,65,.8) 0 14px,rgba(6,10,6,.95) 14px 28px)}
+.dz-access{display:flex;align-items:center;gap:18px;margin-top:10px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.32em;color:var(--acid)}
+.dz-access::before,.dz-access::after{content:'';flex:1;height:9px;
+  background:repeating-linear-gradient(-45deg,rgba(0,255,65,.45) 0 8px,transparent 8px 16px)}
+.dz-access b{font-weight:400;animation:accBlink 1.15s steps(2) infinite}
+@keyframes accBlink{50%{opacity:.25}}
+@media (max-width:760px){.dz{display:none}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1100px){
+  .hero-wrap{grid-template-columns:1fr}
+  .portrait{justify-self:start}
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .mini-grid{grid-template-columns:repeat(3,1fr)}
+  .prac-cat,.prac-cat.rev{grid-template-columns:1fr}
+  .prac-cat{--mq-h:150px}
+  .prac-cat .prac-hero{order:-1;height:auto}
+  .prac-cat .prac-hero img{width:100%;height:auto}
+  .marquee{--mq-h:150px}
+  .about-grid{grid-template-columns:1fr}
+  .stats{flex-wrap:wrap}
+  .stat{min-width:45%}
+  .ft-grid{grid-template-columns:1fr;gap:34px}
+  .qr-box{width:196px;justify-self:start}
+  .ty-wrap::before,.ty-wrap::after{display:none}
+}
+/* ==========================================================
+   MOBILE — phone + small tablet (≤760). Everything here is
+   scoped to the small breakpoint so the desktop composition
+   above is left byte-for-byte untouched.
+   ========================================================== */
+@media (max-width:760px){
+  /* nothing may push the page sideways on a phone */
+  html{overflow-x:hidden}
+
+  /* --- touch : a tap must not leave a hover transform stuck on --- */
+  .card:hover,.mini:hover,.mq-set figure:hover,.btn-term:hover,
+  .prac-hero:hover img,.p-photo:hover img{transform:none}
+
+  /* --- nav : keep all four entries, shrink the chrome --- */
+  nav{padding:8px 14px;
+    background:linear-gradient(to bottom,rgba(3,5,3,.97),rgba(3,5,3,.72) 74%,transparent)}
+  .brand{gap:9px;font-size:9.5px;letter-spacing:.08em}
+  .brand img{width:34px;height:34px;filter:drop-shadow(0 0 8px rgba(0,255,65,.45))}
+  .brand b{font-size:9px;letter-spacing:.1em}
+  .brand em{font-size:7.5px;letter-spacing:.08em}
+  .nav-links{gap:2px;font-size:10px}
+  .nav-links a,.nav-cta{width:auto;padding:9px 6px;font-size:10px;letter-spacing:.02em;
+    -webkit-tap-highlight-color:transparent}
+  .nav-links a::before,.nav-cta::before,
+  .nav-links a::after,.nav-cta::after{font-size:9px}
+  .nav-cta{margin-left:4px}
+
+  /* --- hero : breathe, and let the type run the full width --- */
+  .hero{min-height:100svh;padding:82px 18px 26px}
+  .hero-wrap{gap:24px}
+  .mega .cn-big{font-size:clamp(38px,12.5vw,56px)}
+  .mega .cn-sub{font-size:17px;letter-spacing:.22em;margin-top:8px}
+  .mega .en-deco{font-size:8.5px;letter-spacing:.2em;margin-top:11px}
+  .tag-hl{margin-top:14px}
+  .tag-hl .taghl-in{font-size:12px;padding:6px 11px}
+  .tag-sub{font-size:9.5px;letter-spacing:.14em}
+  .hero-btns{gap:10px;margin-top:16px}
+  .btn-term{font-size:11px;padding:10px 15px}
+  /* logo : centre it under the copy, and never let it bleed past the gutter */
+  .portrait{justify-self:center;width:min(76%,310px)}
+  .logo-stage img.main,.logo-stage .gl img{width:100%}
+  .logo-hud{font-size:8.5px;letter-spacing:.16em}
+  .logo-hud.tl{top:0;left:0}
+  .logo-hud.br{bottom:0;right:0}
+  .portrait .note{font-size:10.5px;margin-top:14px}
+  .stats{margin-top:22px;flex-wrap:wrap}
+  .stat{flex:1 1 50%;min-width:50%;padding:10px 12px}
+  .stat:nth-child(2n){border-right:0}
+  .stat b{font-size:19px}
+  .stat span{font-size:11px;letter-spacing:.1em}
+  .scroll-hint{bottom:6px;font-size:9px;letter-spacing:.4em}
+
+  /* --- section shells --- */
+  #about{padding:80px 16px 48px;min-height:100svh}
+  #projects,#practice{padding:84px 16px 56px;min-height:100svh}
+  section{padding:80px 16px 60px}
+  .sec-head{margin-bottom:32px}
+  #about .sec-head{margin-bottom:20px}
+  .sec-label{font-size:13px;padding-bottom:8px}
+  .sec-label b{display:block;margin:7px 0 0;font-size:10px;letter-spacing:.16em}
+  .group-label{margin:42px 0 18px;gap:12px}
+  .group-label b{font-size:12px}
+  .group-label span{font-size:9px;letter-spacing:.18em}
+  .group-label .gl::after{width:24px}
+
+  /* --- 01 about --- */
+  .about-bio{font-size:12.5px;line-height:1.9;padding-left:14px}
+  .adv-row{padding:9px 12px}
+  .adv-row b{font-size:12px}
+  /* the dossier no longer needs an inner scroll window on a phone —
+     nested scrolling fights the page scroll, so let it grow instead */
+  .xp-scroll{max-height:none;min-height:0;overflow:visible}
+  .xp-tab{font-size:10px;padding:10px 4px;letter-spacing:.1em}
+  .acc-head{padding:11px 13px}
+  .acc-head b{font-size:14px}
+
+  /* --- 02 projects --- */
+  .card .bd{padding:14px 15px 16px}
+  .card h4{font-size:14px;flex-wrap:wrap;gap:3px 10px}
+  .card .tags{font-size:9.5px;margin:7px 0 9px}
+  .card p{font-size:11.5px;line-height:1.85}
+
+  /* --- 03 practice --- */
+  .prac-cat,.prac-cat.rev{--mq-h:132px}
+  .marquee{--mq-h:132px}
+  .prac-cat .prac-hero{min-height:0}
+  .mq-set figure{margin-right:9px;border-radius:8px}
+  .prac-hero{border-radius:8px}
+  .prac-hero::after{left:10px;bottom:10px;font-size:9px;padding:4px 8px}
+
+  /* --- footer --- */
+  footer{padding:68px 16px 34px}
+  .ft-bin{font-size:9px;letter-spacing:.14em;line-height:2;margin-bottom:18px}
+  .ty-wrap{padding:22px 16px;margin:-22px -16px}
+  .ty{font-size:clamp(38px,13vw,62px);text-shadow:-4px -6px 0 rgba(0,255,65,.2)}
+  .ty-plate{width:min(66%,340px)}
+  .ty-sub{font-size:10.5px;letter-spacing:.12em;margin-top:20px;padding:9px 14px;gap:9px}
+  .contact-row{font-size:11px;gap:10px 18px;margin-top:32px}
+  .contact-row a{word-break:break-all}
+  .foot-bottom{margin-top:42px;font-size:9px;letter-spacing:.14em;gap:12px}
+
+  /* --- project detail overlay --- */
+  .pm-head{flex-wrap:wrap;align-items:center;gap:6px 10px;padding:12px 14px}
+  .pm-idx{order:1}
+  .pm-title{order:2;flex:1 1 100%;font-size:17px}
+  .pm-close{order:3;margin-left:auto;align-self:center;padding:7px 11px;font-size:10px}
+  .pm-tags{order:4;flex:1 1 100%;font-size:9.5px;letter-spacing:.1em}
+  .pm-meta{flex-direction:column;gap:11px;padding:12px 14px}
+  .pm-meta div{font-size:10.5px;max-width:none;line-height:1.8}
+  .pm-body{padding:14px 10px 56px}
+  .pm-foot{flex-direction:column;align-items:stretch;gap:9px;padding:11px 14px}
+  .pm-hint{text-align:center}
+  .pm-switch{gap:8px}
+  .pm-switch button{flex:1;font-size:10.5px;padding:10px 6px}
+
+  /* --- mini project window --- */
+  #hmodal{padding:3vh 10px}
+  .hm-win{width:100%;height:82vh}
+  .hm-bar{padding:8px 10px;gap:9px}
+  .hm-path{font-size:10px}
+  .hm-info{padding:11px 12px;gap:8px 14px}
+  .hm-name{font-size:18px}
+  .hm-met{font-size:9.5px;text-align:left}
+  .hm-stage{padding:12px 0 10px}
+  .hm-track{padding:0 12px;gap:9px}
+  .hm-foot{padding:8px 12px;gap:10px}
+  .hm-tip{font-size:9px}
+  .hm-cor{inset:4px}
+  .tip-d{display:none}
+  .tip-m{display:inline}
+
+  /* --- boot card : the two-column panel folds into a stack --- */
+  .bp-cap{font-size:9.5px;letter-spacing:.34em;text-indent:.34em;gap:10px}
+  .bp-cap s{width:18px;height:2px}
+  .bp-panel{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto;
+    padding:8px;gap:8px}
+  .bp-panel::before,.bp-panel::after{display:none}
+  .bp-head{grid-column:1;font-size:12.5px;padding:9px 11px;letter-spacing:.03em}
+  .bp-code{grid-column:1;height:104px;padding:7px 9px;font-size:9px;line-height:1.5}
+  .bp-code .gib{font-size:8px}
+  .bstream-in{font-size:8.5px}
+  .bp-right{grid-column:1;grid-row:auto;height:94px}
+  .bp-right img{height:76px;max-width:88%}
+  .bp-right::after{left:8px;bottom:5px;font-size:6.5px;letter-spacing:.12em}
+  .bp-bar{grid-column:1;height:3px}
+  .bp-foot{margin-top:12px}
+}
+
+/* --- narrow phones : trim the last of the chrome so the four nav
+       entries always fit on one line --- */
+@media (max-width:640px){
+  .feat-grid{grid-template-columns:1fr;gap:18px}
+  .mini-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .mini .cap{padding:10px 11px;font-size:11.5px}
+  .mini .cap s{font-size:9.5px;margin-top:4px}
+  .mini::before{left:8px;top:8px;font-size:9px;padding:2px 6px}
+  .card .im::before{left:9px;bottom:8px;font-size:9px;padding:2px 6px}
+  .p-top{grid-template-columns:clamp(104px,32vw,146px) minmax(0,1fr);gap:12px}
+  .p-name{font-size:22px}
+  .p-role{font-size:8.5px;letter-spacing:.12em}
+  .profile{padding:12px}
+  .acc-head{flex-wrap:wrap;gap:6px 12px}
+  .acc-head em{width:auto}
+  .acc-desc{margin:0 12px 12px;padding:12px 14px;font-size:12px}
+  .hm-info{padding:10px 12px}
+  .stats{margin-top:18px}
+}
+@media (max-width:400px){
+  .brand div{display:none}
+  .nav-links a,.nav-cta{padding:9px 4px;font-size:9.5px}
+  .mega .cn-big{font-size:35px}
+  .mega .cn-sub{font-size:15.5px}
+  .mega .en-deco{font-size:8px;letter-spacing:.14em}
+  .stat b{font-size:17px}
+  .stat span{font-size:10px}
+  .ty{font-size:clamp(34px,12.5vw,52px)}
+  .ty-sub{font-size:9.5px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ BOOT SEQUENCE ============ -->
+<div id="boot" aria-hidden="true">
+  <div class="bp-wrap">
+    <div class="bp-cap"><s></s>P-DESCRIPTION 08<s></s></div>
+    <div class="bp-panel">
+      <div class="bp-head">FOGLIE / SYSTEM CODE ZXN</div>
+      <div class="bp-code">
+        <div class="bline" style="animation-delay:.2s"><span>&gt; FOGLIE.SYS BOOT</span><span>v2.6.0</span></div>
+        <div class="bline" style="animation-delay:.33s"><span>&gt; LOADING PORTFOLIO DATA</span><span>140+ ASSETS</span></div>
+        <div class="bline" style="animation-delay:.46s"><span>&gt; OPERATOR</span><span>ZHOU XINING</span></div>
+        <div class="bline" style="animation-delay:.59s"><span>&gt; STATUS</span><span class="bok">READY_</span></div>
+        <div class="bstream"><div class="bstream-in" id="bstream"></div></div>
+      </div>
+      <div class="bp-right"><img src="assets/logo.png" alt="FOGLIE STUDIO logo"></div>
+      <div class="bp-bar"><i></i></div>
+    </div>
+    <div class="bp-foot"><i></i><i></i></div>
+  </div>
+</div>
+
+<nav id="nav">
+  <div class="brand">
+    <img src="assets/logo.png" alt="FOGLIE STUDIO logo">
+    <div><b>FOGLIE STUDIO</b><em>GAME UI · PORTFOLIO</em></div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="#about" data-cn="简介"><s class="en">ABOUT</s><s class="cn">简介</s></a>
+      <a href="#projects" data-cn="项目"><s class="en">WORKS</s><s class="cn">项目</s></a>
+      <a href="#practice" data-cn="练习"><s class="en">LAB</s><s class="cn">练习</s></a>
+    </div>
+    <a class="nav-cta" href="#contact" data-cn="联系"><s class="en">CONTACT</s><s class="cn">联系</s></a>
+  </div>
+</nav>
+
+<!-- ============ PAGE-WIDE SCROLLING BG ============ -->
+<div class="bgwall" aria-hidden="true">
+  <div class="bg-wall" id="bgwall"></div>
+  <div class="bg-glitch g1" id="bgg1"></div>
+  <div class="bg-glitch g2" id="bgg2"></div>
+  <div class="bg-tear"></div>
+  <div class="bg-tear t2"></div>
+</div>
+<div class="bgflash" aria-hidden="true"></div>
+<div class="pagegrid" aria-hidden="true"></div>
+<div class="tearline" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-shade"></div>
+  <div class="hero-wrap">
+    <div>
+      <h1 class="mega" data-t="周喜宁.">
+        <span class="cn-big"><span class="g" style="animation-delay:.62s">周</span><span class="g" style="animation-delay:.74s">喜</span><span class="g" style="animation-delay:.86s">宁</span><i class="dot g" style="animation-delay:1.05s">.</i><span class="caret"></span></span>
+        <span class="cn-sub type-line">游戏UI作品集</span>
+        <span class="en-deco type-line"><b>//</b> GAME UI PORTFOLIO <b>//</b> ZHOU XINING <b>//</b> 2026</span>
+      </h1>
+      <span class="tag-hl type-line"><span class="taghl-in">做界面，不做装饰。</span></span>
+      <span class="tag-sub">BUILD THE SCREEN. BREAK THE TEMPLATE.</span>
+      <div class="hero-btns">
+        <a class="btn-term" href="#projects"><s>&gt;</s>VIEW WORK</a>
+        <a class="btn-term" href="#about"><s>&gt;</s>ABOUT ME</a>
+      </div>
+    </div>
+    <div class="portrait">
+      <div class="logo-stage">
+        <img class="main" src="assets/logo.png" alt="FOGLIE STUDIO logo">
+        <div class="gl r" aria-hidden="true"><img src="assets/logo.png" alt=""></div>
+        <div class="gl c" aria-hidden="true"><img src="assets/logo.png" alt=""></div>
+        <div class="slice s1"></div><div class="slice s2"></div>
+        <div class="logo-scanline"></div>
+        <span class="logo-hud tl">SIGIL//FOGLIE<br><i>VERIFIED · 2026</i></span>
+      </div>
+      <div class="frame-box note">
+        <s class="fb-tl"></s><s class="fb-tr"></s><s class="fb-bl"></s><s class="fb-br"></s>
+        游戏UI设计 / 美术设计
+        <span class="note-shift" aria-hidden="true">游戏UI设计 / 美术设计</span>
+        <em>GAME UI &amp; ART DESIGN · 福州 / 远程 · 2026</em>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b data-count="6">0</b><span>年设计经验</span></div>
+    <div class="stat"><b data-count="15">0</b><span>上线游戏项目</span></div>
+    <div class="stat"><b data-count="10">0</b><span>视觉 0→1 搭建</span></div>
+    <div class="stat"><b>7000w+</b><span>AI 漫剧 / 真人短剧热度</span></div>
+  </div>
+  <div class="scroll-hint">SCROLL ▾</div>
+</header>
+
+<!-- ============ 01 ABOUT ============ -->
+<section id="about">
+  <div class="sec-head rv">
+    <div class="sec-label">个人简介<b>_ABOUT ME / SEC.01</b></div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="about-grid">
+    <!-- LEFT : id card -->
+    <div class="profile rv">
+      <div class="p-top">
+        <div class="p-photo">
+          <img src="assets/avatar.jpg" alt="周喜宁">
+        </div>
+        <div>
+          <div class="p-name">周喜宁<i>_</i></div>
+          <div class="p-role">GAME UI DESIGNER<br>FOGLIE STUDIO</div>
+        </div>
+      </div>
+
+      <div class="term-block">
+        <div class="term-head">专业技能<span>SKILLS.SYS</span></div>
+        <div class="term-body skill-line">
+          <b>Photoshop</b> / <b>Illustrator</b> / <b>Premiere·AE</b> / <b>Unity</b> / <b>Cocos</b>
+        </div>
+      </div>
+      <div class="term-block">
+        <div class="term-head">个人档案<span>PROFILE.DAT</span></div>
+        <div class="term-body">
+          <div class="row"><i>联系</i>17659065501（电话 / 微信）</div>
+          <div class="row"><i>邮箱</i>yezixingqiu@hotmail.com</div>
+          <div class="row"><i>城市</i>福州 / 远程</div>
+          <div class="row"><i>学历</i>闽江学院 本科 · 服装与服饰设计</div>
+          <div class="row"><i>交换</i>实践大学（台北）· 时尚学</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT : bio + strengths + experience -->
+    <div class="about-main">
+      <p class="about-bio rv d1">深耕<b>海外轻休闲游戏</b> 6 年，主导 <b>10+ 款产品视觉体系从 0 到 1</b>；率先把 <b>AIGC</b> 做成生产线——多款 AI 漫剧、真人短剧上线，单部热度 <b>7000 万+</b>。设计的价值不只在界面，而在把世界观翻译成玩家摸得到的体验。</p>
+
+      <div class="group-label rv d1"><b>个人优势</b><span>STRENGTHS</span><div class="gl"></div></div>
+      <div class="adv-list rv d1">
+        <div class="adv-row"><s>A</s><div><b>全链路独立作战</b><span>原画设定 → UI 视觉 → 引擎落地一站式完成，可脱离完整团队独立交付。</span></div></div>
+        <div class="adv-row"><s>B</s><div><b>AIGC 先行者</b><span>率先将 AIGC 引入设计流程，AI 漫剧 / 真人短剧多部上线，单部热度 7000 万+。</span></div></div>
+        <div class="adv-row"><s>C</s><div><b>海外审美经验</b><span>深耕海外轻休闲领域，熟悉欧美 / 东南亚用户偏好与跨文化本地化适配。</span></div></div>
+      </div>
+
+      <div class="xp-term rv d2">
+        <div class="xp-term-top">EXPERIENCE.LOG <s>// 点击条目展开详情</s></div>
+        <div class="xp-tabs" role="tablist">
+          <button class="xp-tab on" data-panel="jobs"><s>01</s>工作经历</button>
+          <button class="xp-tab" data-panel="projects"><s>02</s>项目经历</button>
+        </div>
+        <div class="xp-panels xp-scroll">
+          <div class="xp-panel on" id="panel-jobs">
+            <div class="acc open">
+              <button class="acc-head"><em>25.12 — 26.04</em><b>福州星龙互娱 <s>游戏 UI</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">独立负责 3 款已上线抖音小游戏的视觉体系搭建，覆盖原画设定、动效表现到界面 UI 的全链路设计；通过统一视觉规范提升团队协作效率，产品上线后用户反馈良好。两款 AI 漫剧 / 真人短剧从文字到落地全流程，单部热度 7000 万+。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>23.11 — 25.11</em><b>福州前瞻创意 <s>游戏 UI 设计</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">主导海外休闲游戏美术与 UI 体系搭建，完成多款产品从 0 到 1 的视觉设计；项目启动阶段确立核心艺术风格，全周期严格把控风格一致性；负责包资源统筹管理，通过流程优化将执行效率提升 30%；率先将 AIGC 引入设计流程，精细化调校与二次创作产出高质量视觉内容，缩短设计周期的同时保障效果稳定达标。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>21.11 — 23.07</em><b>杭州游卡 <s>UI 设计师</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">参与《三国杀：名将传》《自在西游》《花与恋》等多款项目 UI 设计；核心负责《名将传》国内版与海外版活动界面持续迭代，主导多语言环境下的 UI 本地化适配——视觉风格延续、交互逻辑优化与跨文化差异适配，保障不同地区市场的视觉体验一致性。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>21.07 — 21.11</em><b>上海吾未网络 <s>UI 设计师</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">《诸神黄昏：征服》全流程 UI 视觉设计与落地实现：依据世界观完成 UI 效果图创意与资源切图，精准还原至 Unity 引擎，协同前端完成交互调试；并按策划需求完成功能图标体系化设计，实现从创意到游戏内应用的全链路落地。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>21.01 — 21.04</em><b>福州得游互娱 <s>UI 设计 · 实习</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">《敢达决战》1.0 / 2.0 版本 UI 设计项目，承担 UI 切图执行与活动界面迭代优化，深度参与游戏视觉系统从框架搭建到细节落地的全流程。</div></div>
+            </div>
+          </div>
+          <div class="xp-panel" id="panel-projects">
+            <div class="acc open">
+              <button class="acc-head"><em>2026.05 — 至今</em><b>Lumenstella Studio <s>UI · 美宣</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">参与独立游戏项目《Sentient Trainer》，负责 UI 设计与美术宣传物料制作；结合项目世界观完成界面视觉风格搭建与美宣内容产出，协助塑造产品对外视觉形象。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>2022.10 — 23.01</em><b>扬之水工作室 <s>美术指导</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">参与独立游戏《春秋浮生记》初期制作，负责美术风格方向指导，把控角色立绘与 UI 视觉一致性，确保项目美术调性统一。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>2020.06 — 21.06</em><b>乌拉诺游戏制作组 <s>UI 设计</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">参与网易游戏高校 MINI-GAME 大赛，负责作品《以实玛利的谎言》及入围作品《心影》的 UI 系统精细化设计与游戏氛围视觉构建；通过组件化设计提升界面视觉一致性，助力团队进入全国决赛（Top 20）。</div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><em>2016.07 — 17.09</em><b>智商有限制作组 <s>主创 · 美术助理</s></b><u class="acc-x"></u></button>
+              <div class="acc-body"><div class="acc-desc">负责游戏公司、工作室及个人客户的外包对接，统筹管理组内 8 位成员的任务分配；协助完成近 60 份高品质艺术创作产出，并负责作品打包整理与交付管理。</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="xp-status">RECORD DECRYPTED · 数据已解密</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 PROJECTS ============ -->
+<section id="projects">
+  <div class="sec-head rv">
+    <div class="sec-label">项目展示<b>_SELECTED WORKS / SEC.02</b></div>
+    <div class="sec-line"></div>
+  </div>
+
+  <div class="group-label rv"><b>旗舰项目</b><span>FEATURED</span><div class="gl"></div></div>
+  <div class="feat-grid">
+    <div class="card rv" data-p="mingjiang"><div class="im"><img src="assets/cover-mingjiang.jpg" alt="三国杀：名将传"></div><div class="bd"><h4>三国杀：名将传 <s>[21-23]</s></h4><div class="tags">卡牌 · 国风 · 活动迭代 · 多语言本地化</div><p>杭州游卡 · 核心负责国内外版本活动界面持续迭代，主导多语言环境下的 UI 本地化适配与视觉风格延续。</p></div></div>
+    <div class="card rv d1" data-p="haiwai"><div class="im"><img src="assets/cover-haiwai.jpg" alt="三国杀：名将传 海外版"></div><div class="bd"><h4>三国杀：名将传（海外版） <s>[22-23]</s></h4><div class="tags">海外发行 · 本地化适配 · 视觉延续</div><p>负责海外版本活动界面迭代与多语言排版适配，在保持国风视觉基因的同时贴合海外用户审美。</p></div></div>
+    <div class="card rv d2" data-p="zhushen"><div class="im"><img src="assets/cover-zhushen.jpg" alt="诸神黄昏：征服"></div><div class="bd"><h4>诸神黄昏：征服 <s>[2021]</s></h4><div class="tags">SLG · 西方魔幻 · 引擎落地</div><p>上海吾未 · 全流程 UI 视觉设计与切图，精准还原至 Unity 引擎，完成功能图标体系化设计。</p></div></div>
+    <div class="card rv d3" data-p="ganda"><div class="im"><img src="assets/cover-ganda.jpg" alt="敢达决战"></div><div class="bd"><h4>敢达决战 <s>[2021]</s></h4><div class="tags">IP 改编 · 机甲 · 版本迭代</div><p>福州得游互娱 · 参与 1.0 / 2.0 版本 UI 设计，承担切图执行与活动界面迭代优化。</p></div></div>
+    <div class="card rv d4" data-p="youka"><div class="im"><img src="assets/p17_x638.jpeg" alt="游卡会员中心 SDK 界面"></div><div class="bd"><h4>游卡会员中心（SDK 界面） <s>[2022]</s></h4><div class="tags">系统界面 · 账号 / 支付 · 通用组件</div><p>面向多款产品的通用 SDK 界面设计，兼顾品牌视觉与高可用性，适配多语言与多分辨率环境。</p></div></div>
+  </div>
+
+  <div class="group-label rv"><b>海外项目</b><span>OVERSEAS · CASUAL</span><div class="gl"></div></div>
+  <div class="mini-grid">
+    <div class="mini rv" data-m="sentient"><img src="assets/cov-sentient.jpg" alt="Sentient Trainer"><div class="cap">Sentient Trainer<s>宠物养成 · 2026</s></div></div>
+    <div class="mini rv d1" data-m="mermaid"><img src="assets/cov-mermaid.jpg" alt="美人鱼消消"><div class="cap">美人鱼消消<s>三消 · 2025</s></div></div>
+    <div class="mini rv d2" data-m="watersort"><img src="assets/cov-watersort.jpg" alt="Water Sort"><div class="cap">Water Sort: Magic World<s>益智排序 · 2024</s></div></div>
+    <div class="mini rv d3" data-m="cakesort"><img src="assets/cov-cakesort.jpg" alt="Cake Sort"><div class="cap">Cake Sort: Puzzle<s>分类益智 · 2024</s></div></div>
+    <div class="mini rv d4" data-m="brainking"><img src="assets/cov-brainking.jpg" alt="Brain King"><div class="cap">Brain King: Twist and Turn<s>脑洞益智 · 2024</s></div></div>
+    <div class="mini rv" data-m="cutit"><img src="assets/cov-cutit.jpg" alt="Cut It"><div class="cap">Cut It: Rope Puzzle<s>割绳解谜 · 2023</s></div></div>
+    <div class="mini rv d1" data-m="plab"><img src="assets/p13_x533.jpeg" alt="Personality Lab"><div class="cap">Personality Lab<s>趣味测试 · 2023</s></div></div>
+  </div>
+
+  <div class="group-label rv"><b>国内项目</b><span>DOMESTIC</span><div class="gl"></div></div>
+  <div class="mini-grid">
+    <div class="mini rv" data-m="renyu"><img src="assets/p05_x266.jpeg" alt="人鱼寻食"><div class="cap">人鱼寻食<s>休闲消除 · 2025</s></div></div>
+    <div class="mini rv d1" data-m="alien"><img src="assets/p06_x291.jpeg" alt="异形吞噬战"><div class="cap">异形吞噬战<s>超休闲 · 2025</s></div></div>
+    <div class="mini rv d2" data-m="xiaoyao"><img src="assets/cov-xiaoyao.jpg" alt="逍遥群神榜"><div class="cap">逍遥群神榜<s>神话卡牌 · 2025</s></div></div>
+  </div>
+</section>
+
+<!-- ============ 03 PRACTICE ============ -->
+<section id="practice">
+  <div class="sec-head rv">
+    <div class="sec-label">练习作品<b>_KEEP TRAINING / SEC.03</b></div>
+    <div class="sec-line"></div>
+  </div>
+
+  <div class="group-label rv"><b>平面 / IP 设计</b><span>GRAPHIC &amp; IP</span><div class="gl"></div></div>
+  <div class="prac-cat" data-dir="right">
+    <figure class="prac-hero rv" data-tag="PINNED_01 // 同人周边企划"><img src="assets/hero-lovebullet.jpg" alt="LOVE-BULLET 同人周边企划主视觉"></figure>
+    <div class="mq2 rv">
+      <div class="marquee" data-dir="right">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/plane/p30_x992.jpeg" width="1280" height="200" alt="plane p30_x992.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x989.jpeg" width="768" height="432" alt="plane p30_x989.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x1011.jpeg" width="377" height="1477" alt="plane p30_x1011.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x1006.jpeg" width="708" height="447" alt="plane p30_x1006.jpeg"></figure>
+          <figure><img src="assets/prac/plane/x31.jpeg" width="1000" height="1127" alt="八达香企业宣传册"></figure>
+          <figure><img src="assets/prac/plane/x33.jpeg" width="1000" height="1127" alt="电商详情页排版"></figure>
+          <figure><img src="assets/prac/plane/x35.jpeg" width="1000" height="1000" alt="clo3D 服装设计封面"></figure>
+        </div></div>
+      </div>
+      <div class="marquee off" data-dir="right">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/plane/p30_x1000.jpeg" width="414" height="736" alt="plane p30_x1000.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x997.jpeg" width="768" height="432" alt="plane p30_x997.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x995.jpeg" width="768" height="426" alt="plane p30_x995.jpeg"></figure>
+          <figure><img src="assets/prac/plane/p30_x1003.jpeg" width="414" height="736" alt="plane p30_x1003.jpeg"></figure>
+          <figure><img src="assets/prac/plane/x32.jpeg" width="1000" height="1127" alt="电商产品详情页"></figure>
+          <figure><img src="assets/prac/plane/x34.jpeg" width="1000" height="1206" alt="设计流程说明页"></figure>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="group-label rv"><b>游戏 UI 设计</b><span>GAME UI</span><div class="gl"></div></div>
+  <div class="prac-cat rev">
+    <div class="mq2 rv">
+      <div class="marquee" data-dir="left">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/ui/p23_x769.jpeg" width="384" height="840" alt="ui p23_x769.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p23_x773.jpeg" width="384" height="840" alt="ui p23_x773.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p24_x791.jpeg" width="525" height="797" alt="ui p24_x791.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p24_x785.jpeg" width="540" height="960" alt="ui p24_x785.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p25_x795.jpeg" width="540" height="960" alt="ui p25_x795.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p25_x807.jpeg" width="562" height="999" alt="ui p25_x807.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p26_x818.jpeg" width="950" height="534" alt="ui p26_x818.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p26_x816.jpeg" width="1189" height="550" alt="ui p26_x816.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p27_x825.jpeg" width="960" height="540" alt="ui p27_x825.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p27_x831.jpeg" width="1042" height="540" alt="ui p27_x831.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p28_x842.jpeg" width="1050" height="450" alt="ui p28_x842.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p28_x840.jpeg" width="1170" height="540" alt="ui p28_x840.jpeg"></figure>
+        </div></div>
+      </div>
+      <div class="marquee off" data-dir="left">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/ui/p23_x771.jpeg" width="384" height="840" alt="ui p23_x771.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p23_x780.jpeg" width="563" height="1218" alt="ui p23_x780.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p24_x783.jpeg" width="525" height="934" alt="ui p24_x783.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p24_x788.jpeg" width="540" height="960" alt="ui p24_x788.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p25_x798.jpeg" width="540" height="960" alt="ui p25_x798.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p26_x814.jpeg" width="1156" height="534" alt="ui p26_x814.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p26_x820.jpeg" width="950" height="534" alt="ui p26_x820.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p26_x822.jpeg" width="950" height="534" alt="ui p26_x822.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p27_x827.jpeg" width="960" height="540" alt="ui p27_x827.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p27_x829.jpeg" width="896" height="504" alt="ui p27_x829.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p28_x838.jpeg" width="980" height="448" alt="ui p28_x838.jpeg"></figure>
+          <figure><img src="assets/prac/ui/p28_x844.jpeg" width="1218" height="609" alt="ui p28_x844.jpeg"></figure>
+        </div></div>
+      </div>
+    </div>
+    <figure class="prac-hero rv" data-tag="PINNED_02 // GAME UI"><img src="assets/p23_x767.jpeg" alt="签到活动界面"></figure>
+  </div>
+
+  <div class="group-label rv"><b>人物立绘原画</b><span>CHARACTER ART</span><div class="gl"></div></div>
+  <div class="prac-cat">
+    <figure class="prac-hero rv" data-tag="PINNED_03 // 原神同人立绘"><img src="assets/hero-weibo.jpg" alt="维珀纳斯 · 原神同人立绘"></figure>
+    <div class="mq2 rv">
+      <div class="marquee" data-dir="right">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/art/p31_x1030.jpeg" width="960" height="540" alt="art p31_x1030.jpeg"></figure>
+          <figure><img src="assets/prac/art/p31_x1027.jpeg" width="959" height="540" alt="art p31_x1027.jpeg"></figure>
+          <figure><img src="assets/prac/art/p31_x1018.jpeg" width="960" height="540" alt="art p31_x1018.jpeg"></figure>
+          <figure><img src="assets/prac/art/p32_x1046.jpeg" width="768" height="432" alt="art p32_x1046.jpeg"></figure>
+          <figure><img src="assets/prac/art/p32_x1037.jpeg" width="768" height="432" alt="art p32_x1037.jpeg"></figure>
+          <figure><img src="assets/prac/art/p32_x1043.jpeg" width="768" height="432" alt="art p32_x1043.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1056.jpeg" width="540" height="764" alt="art p33_x1056.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1061.jpeg" width="933" height="1317" alt="art p33_x1061.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1064.jpeg" width="500" height="500" alt="art p33_x1064.jpeg"></figure>
+        </div></div>
+      </div>
+      <div class="marquee off" data-dir="right">
+        <div class="mq-track"><div class="mq-set">
+          <figure><img src="assets/prac/art/p31_x1024.jpeg" width="960" height="540" alt="art p31_x1024.jpeg"></figure>
+          <figure><img src="assets/prac/art/p31_x1015.jpeg" width="960" height="540" alt="art p31_x1015.jpeg"></figure>
+          <figure><img src="assets/prac/art/p31_x1021.jpeg" width="960" height="540" alt="art p31_x1021.jpeg"></figure>
+          <figure><img src="assets/prac/art/p32_x1049.jpeg" width="1911" height="430" alt="art p32_x1049.jpeg"></figure>
+          <figure><img src="assets/prac/art/p32_x1034.jpeg" width="1727" height="434" alt="art p32_x1034.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1067.jpeg" width="480" height="729" alt="art p33_x1067.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1074.jpeg" width="540" height="764" alt="art p33_x1074.jpeg"></figure>
+          <figure><img src="assets/prac/art/p33_x1070.jpeg" width="730" height="517" alt="art p33_x1070.jpeg"></figure>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer id="contact">
+  <div class="ft-grid">
+    <div class="ft-left">
+      <div class="ft-bin rv" aria-hidden="true">01001101 00110000 01110001 01101001 01101110 01100111<br>01111001 01101001 00100000 01100100 01100101 01110011 01101001 01100111 01101110</div>
+      <div class="ty-wrap rv">
+        <span class="ck ck-tl" aria-hidden="true"></span><span class="ck ck-tr" aria-hidden="true"></span>
+        <span class="ck ck-bl" aria-hidden="true"></span><span class="ck ck-br" aria-hidden="true"></span>
+        <div class="ty-plate" aria-hidden="true"></div>
+        <div class="ty" data-t="设计即反叛。">设计即<span class="flip" data-w="反叛"><span class="fw">反叛</span></span><i>.</i></div>
+      </div>
+      <div class="ty-sub rv d1"><s>×</s>DESIGN IS REBELLION · 谢谢观看 · 期待合作</div>
+      <div class="contact-row rv d2">
+        <a href="tel:17659065501">电话 / 微信 · 17659065501</a>
+        <a href="mailto:yezixingqiu@hotmail.com">yezixingqiu@hotmail.com</a>
+        <a href="#top">期望城市 · 福州 / 远程</a>
+      </div>
+    </div>
+    <aside class="qr-box rv d2">
+      <div class="qr-top">WECHAT.QR <s>// 微信扫一扫</s></div>
+      <div class="qr-img"><img src="assets/wechat-qr.png" width="610" height="610" alt="微信二维码"></div>
+      <div class="qr-status">SCAN TO CONNECT · 信号良好</div>
+    </aside>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 ZHOU XINING</span>
+    <span>GAME UI DESIGNER · FUZHOU · 中国福州</span>
+    <div class="barcode"></div>
+  </div>
+</footer>
+
+<!-- project detail overlay -->
+<div id="pmodal" aria-hidden="true">
+  <div class="pm-head">
+    <span class="pm-idx">PRJ.<span id="pm-idx">01</span></span>
+    <span class="pm-title"><span id="pm-title"></span><s id="pm-year"></s></span>
+    <span class="pm-tags" id="pm-tags"></span>
+    <button class="pm-close" id="pm-close">[ 关闭 ESC ]</button>
+  </div>
+  <div class="pm-meta">
+    <div><i>项目描述 / BRIEF</i><span id="pm-desc"></span></div>
+    <div><i>所属团队 / STUDIO</i><b id="pm-client"></b></div>
+    <div><i>担任角色 / ROLE</i><b id="pm-role"></b></div>
+  </div>
+  <div class="pm-body" id="pm-body"></div>
+  <div class="pm-foot">
+    <span class="pm-hint"><i class="tip-d">ESC 关闭 · ←→ 切换项目</i><i class="tip-m">下滑浏览全部画面 · 点上方按钮切换项目</i></span>
+    <div class="pm-switch">
+      <button id="pm-prev">&lt; 上一个项目</button>
+      <button id="pm-next">下一个项目 &gt;</button>
+    </div>
+  </div>
+</div>
+
+<!-- mini project window (overseas / domestic) -->
+<div id="hmodal" aria-hidden="true">
+  <div class="hm-veil"></div>
+  <div class="hm-win" role="dialog" aria-modal="true">
+    <span class="hm-scan" aria-hidden="true"></span>
+    <span class="hm-cor" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <div class="hm-bar">
+      <span class="hm-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hm-path">&gt;&nbsp;<em id="hm-path"></em><span class="hm-caret"></span></span>
+      <button class="hm-x" id="hm-close" aria-label="关闭">×</button>
+    </div>
+    <div class="hm-info">
+      <div class="hm-name"><span id="hm-title"></span><s id="hm-sub"></s></div>
+      <div class="hm-met" id="hm-met"></div>
+    </div>
+    <div class="hm-stage" id="hm-stage"></div>
+    <div class="hm-foot">
+      <span class="hm-log" id="hm-log"></span>
+      <span class="hm-tip"><i class="tip-d">⇄ 拖动横向拉杆查看 · ESC / × 关闭</i><i class="tip-m">⇄ 左右滑动查看 · 点 × 关闭</i></span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- boot sequence: hold the overlay, then release the entrance cascade ---- */
+(function(){
+  const boot=document.getElementById('boot');
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  /* cyber hand-off: sliced data sweep + scan beam + pixel grid, played as the
+     boot card dissolves so the main stage is "revealed" rather than just faded in */
+  function playTrans(){
+    if(document.getElementById('trans')) return;
+    let bars='';
+    for(let i=0;i<16;i++) bars+='<s style="--i:'+i+'"></s>';
+    const t=document.createElement('div');
+    t.id='trans';t.setAttribute('aria-hidden','true');
+    t.innerHTML='<div class="tr-veil"></div><div class="tr-bars">'+bars+'</div>'+
+      '<div class="tr-grid"></div><div class="tr-scan"></div>'+
+      '<div class="tr-tag">&gt; ENTERING_SYSTEM // ACCESS GRANTED</div>';
+    document.body.appendChild(t);
+    requestAnimationFrame(()=>t.classList.add('go'));
+    setTimeout(()=>{t.remove();},1500);
+  }
+  function go(){
+    document.body.classList.add('booted');
+    setTimeout(()=>{boot.classList.add('done');},780);
+    setTimeout(playTrans,880);
+  }
+  if(reduce){boot.parentNode.removeChild(boot);document.body.classList.add('booted');return;}
+  /* release on DOM timing, not 'load' — the wall loads hundreds of images and
+     would stall the cascade behind them */
+  setTimeout(go,1900);
+  /* safety net */
+  setTimeout(()=>{if(!document.body.classList.contains('booted'))go();},3000);
+})();
+
+/* ---- matrix rain + live telemetry stream (boot overlay) ---- */
+(function(){
+  const boot=document.getElementById('boot');
+  if(!boot) return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+
+  /* 1 · falling glyph rain */
+  const cv=document.createElement('canvas');
+  cv.id='mx-rain';
+  boot.insertBefore(cv,boot.firstChild);
+  const ctx=cv.getContext('2d');
+  const GLYPH='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFXYZ<>/\\|=+*#$%&@';
+  let fs=16,W=0,H=0,dpr=1,cols=[];
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=cv.width=Math.floor(innerWidth*dpr);
+    H=cv.height=Math.floor(innerHeight*dpr);
+    cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
+    fs=Math.round(16*dpr);
+    const n=Math.max(1,Math.ceil(W/fs));
+    cols=new Array(n).fill(0).map(()=>({
+      y:Math.round(Math.random()*-H/fs),
+      sp:.26+Math.random()*.5,
+      hot:Math.random()<.16            /* a few columns run bright */
+    }));
+    ctx.fillStyle='#030503';ctx.fillRect(0,0,W,H);
+  }
+  resize();
+  window.addEventListener('resize',resize);
+  let raf=0,last=0;
+  function draw(ts){
+    raf=requestAnimationFrame(draw);
+    if(ts-last<33) return;
+    last=ts;
+    ctx.fillStyle='rgba(3,5,3,.085)';
+    ctx.fillRect(0,0,W,H);
+    ctx.font=fs+'px ui-monospace,Menlo,Consolas,monospace';
+    ctx.textBaseline='top';
+    for(let i=0;i<cols.length;i++){
+      const c=cols[i], y=c.y*fs;
+      if(y>-fs&&y<H){
+        ctx.fillStyle=c.hot?'#eafff0':'#b7ffc9';
+        ctx.shadowColor='#00ff41';ctx.shadowBlur=(c.hot?12:8)*dpr;
+        ctx.fillText(GLYPH[(Math.random()*GLYPH.length)|0],i*fs,y);
+        ctx.shadowBlur=0;
+      }
+      if(y>H&&Math.random()>0.972) c.y=0;
+      else c.y+=c.sp;
+    }
+  }
+  raf=requestAnimationFrame(draw);
+
+  /* 2 · telemetry lines rolling inside the code panel */
+  const host=document.getElementById('bstream');
+  if(host){
+    const HEX='0123456789ABCDEF';
+    const TAG=['NODE','ASSET','XREF','BLOB','PIPE','CACHE','FRAME','VEC','MASK','SHADER','GPU','SYNC'];
+    for(let i=0;i<14;i++){
+      const tag=TAG[(Math.random()*TAG.length)|0];
+      let hex='';
+      for(let k=0;k<26;k++) hex+=HEX[(Math.random()*HEX.length)|0];
+      const addr='0x'+(0x1000+i*64).toString(16).toUpperCase();
+      host.insertAdjacentHTML('beforeend',
+        '<div><s>'+addr+'</s> '+tag+'//<em>'+hex.slice(0,14)+'</em>'+hex.slice(14)+'</div>');
+    }
+    host.innerHTML+=host.innerHTML;   /* second copy → seamless -50% loop */
+  }
+
+  /* kill the rain once the overlay is dismissed */
+  const obs=new MutationObserver(()=>{
+    if(boot.classList.contains('done')){cancelAnimationFrame(raf);obs.disconnect();}
+  });
+  obs.observe(boot,{attributes:true,attributeFilter:['class']});
+})();
+
+/* ---- hero bg wall: rows of portfolio shots from the PDF, scrolling 45° top-right → bottom-left ---- */
+/* pages 4-21 of the portfolio PDF — the project-showcase section only */
+const bgImgs=["p04_00","p04_01","p04_02","p04_03","p04_04","p05_05","p05_06","p05_07","p05_08","p05_09",
+"p06_10","p06_11","p06_12","p06_13","p06_14","p06_15","p07_16","p07_17","p07_18","p07_19","p07_20",
+"p08_21","p08_22","p08_23","p08_24","p08_25","p08_26","p08_27","p09_28","p09_29","p09_30","p09_31",
+"p10_32","p10_33","p10_34","p10_35","p10_36","p11_37","p11_38","p11_39","p11_40","p12_41","p12_42",
+"p12_43","p12_44","p13_45","p13_46","p13_47","p13_48","p13_49","p14_50","p14_51","p14_52","p14_53",
+"p14_54","p15_55","p16_56","p16_57","p16_58","p16_59","p16_60","p17_61","p17_62","p17_63","p18_64",
+"p18_65","p18_66","p18_67","p18_68","p19_69","p19_70","p19_71","p19_72","p19_73","p20_74","p20_75",
+"p20_76","p20_77","p21_78","p21_79","p21_80","p21_81","p21_82"];
+function buildWall(el,shuffle,rows,perRow){
+  const pool=[...bgImgs];
+  if(shuffle)pool.sort(()=>Math.random()-.5);
+  for(let r=0;r<rows;r++){
+    const row=document.createElement('div');row.className='m-row';
+    row.style.setProperty('--dur',(52+r*7)+'s');
+    row.style.animationDirection=r%2?'reverse':'normal';
+    const items=[];
+    for(let i=0;i<perRow;i++)items.push(pool[(r*5+i*3)%pool.length]);
+    const html=items.map(n=>`<img src="assets/bg/${n}.jpg" alt="">`).join('');
+    row.innerHTML=html+html;   /* duplicate for seamless loop */
+    el.appendChild(row);
+  }
+}
+/* main wall: 9 tall rows blanket the rotated diagonal; glitch walls only
+   carry 3 rows each — they just flash in horizontal bands, full height is waste.
+   Phones ship roughly half the wall (120 images instead of 234): the rotated
+   diagonal still covers the viewport, but decode + composite cost drops hard. */
+const WALL_MOB=innerWidth<760;
+buildWall(document.getElementById('bgwall'),false,WALL_MOB?6:9,WALL_MOB?10:13);
+buildWall(document.getElementById('bgg1'),true,WALL_MOB?2:3,WALL_MOB?10:13);
+buildWall(document.getElementById('bgg2'),true,WALL_MOB?2:3,WALL_MOB?10:13);
+
+/* nav scroll state */
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>60),{passive:true});
+
+/* nav active section highlight */
+const navLinks=[...document.querySelectorAll('.nav-links a')];
+const secs=[...document.querySelectorAll('section[id]')];
+const sio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){
+    navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));
+  }
+}),{threshold:.28,rootMargin:'-8% 0px -40% 0px'});
+secs.forEach(s=>sio.observe(s));
+
+/* reveal on scroll — bidirectional.
+   Entrance plays once the element reaches the viewport "core"
+   (12% inset); the exit unwinds it while it is still partly
+   on screen, and scrolling back re-runs the entrance. */
+const rvEls=[...document.querySelectorAll('.rv')];
+let rvRaf=0;
+function rvPass(){
+  rvRaf=0;
+  const vh=innerHeight,doc=document.documentElement;
+  const atEdge=scrollY<=4||scrollY+vh>=doc.scrollHeight-4;
+  const boxes=rvEls.map(el=>el.getBoundingClientRect());  /* one read pass */
+  for(let i=0;i<rvEls.length;i++){
+    const el=rvEls[i],r=boxes[i];
+    const visible=r.bottom>0&&r.top<vh;
+    const inCore=r.top<vh*.88&&r.bottom>vh*.12;
+    const on=el.classList.contains('in');
+    if(inCore||(atEdge&&visible)){
+      if(on)continue;
+      clearTimeout(el._rvT);
+      el.classList.remove('out');
+      el.classList.add('in');
+    }else if(on){
+      el.classList.remove('in');
+      el.classList.add('out');
+      clearTimeout(el._rvT);
+      el._rvT=setTimeout(()=>el.classList.remove('out'),1100);  /* safety net */
+    }
+  }
+}
+function rvSchedule(){if(!rvRaf)rvRaf=requestAnimationFrame(rvPass);}
+addEventListener('scroll',rvSchedule,{passive:true});
+addEventListener('resize',rvSchedule,{passive:true});
+document.addEventListener('animationend',e=>{
+  if(e.animationName&&e.animationName.endsWith('Out'))e.target.classList.remove('out');
+});
+rvPass();
+
+/* experience terminal: tabs + single-open accordion */
+document.querySelectorAll('.xp-tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.xp-tab').forEach(t=>t.classList.toggle('on',t===tab));
+  document.querySelectorAll('.xp-panel').forEach(p=>p.classList.toggle('on',p.id==='panel-'+tab.dataset.panel));
+}));
+document.querySelectorAll('.acc-head').forEach(head=>head.addEventListener('click',()=>{
+  const item=head.parentElement, panel=head.closest('.xp-panel'), wasOpen=item.classList.contains('open');
+  panel.querySelectorAll('.acc').forEach(a=>a.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}));
+
+/* stat count-up */
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;cio.unobserve(e.target);
+  const el=e.target,end=+el.dataset.count,dur=1600,t0=performance.now();
+  (function tick(t){const p=Math.min((t-t0)/dur,1),ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(end*ease)+(p===1&&end>=15?'+':'');
+    if(p<1)requestAnimationFrame(tick);})(t0);
+}),{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* hero parallax fade */
+const heroWrap=document.querySelector('.hero-wrap');
+addEventListener('scroll',()=>{
+  if(scrollY<innerHeight){heroWrap.style.transform=`translateY(${scrollY*.14}px)`;
+    heroWrap.style.opacity=1-scrollY/(innerHeight*.9);}
+},{passive:true});
+
+/* ---- project detail overlay ---- */
+const PROJECTS={
+  mingjiang:{title:'三国杀：名将传',year:'[21-23]',tags:'卡牌 · 国风 · 活动迭代 · 多语言本地化',
+    client:'杭州游卡',role:'核心 UI 设计',
+    desc:'核心负责国内外版本活动界面持续迭代，主导多语言环境下的 UI 本地化适配与视觉风格延续。',
+    shots:[['p14_0',840,367],['p14_1',917,418],['p14_2',840,384],['p14_3',915,519],['p14_4',840,384],
+      ['p15_2',621,214,'m'],['p15_0',217,203,'s'],['p15_3',216,98,'s'],['p15_4',276,125,'s'],
+      ['p15_1',129,119,'s'],['p15_5',133,132,'s'],['p15_6',200,64,'s']]},
+  haiwai:{title:'三国杀：名将传（海外版）',year:'[22-23]',tags:'海外发行 · 本地化适配 · 视觉延续',
+    client:'杭州游卡',role:'海外版 UI 迭代',
+    desc:'负责海外版本活动界面迭代与多语言排版适配，在保持国风视觉基因的同时贴合海外用户审美。',
+    shots:[['p16_0',980,448],['p16_1',796,448],['p16_2',764,429],['p16_3',796,449],['p16_4',840,384],['hw1',993,419],['hw2',993,419],['hw3',825,515],['hw4',852,515]]},
+  zhushen:{title:'诸神黄昏：征服',year:'[2021]',tags:'SLG · 西方魔幻 · 引擎落地',
+    client:'上海吾未',role:'全流程 UI 设计',
+    desc:'全流程 UI 视觉设计与切图，精准还原至 Unity 引擎，完成功能图标体系化设计。',
+    shots:[['p18_0',936,432],['p18_1',936,432],['p18_2',936,432],['p18_3',936,432],['p18_4',936,432],
+      ['p19_0',936,432],['p19_1',936,432],['p19_2',936,432],['p19_3',936,432],['p19_4',936,432],
+      ['p20_0',677,540],['p20_1',900,416],['p20_2',1161,536],['p20_3',900,416]]},
+  ganda:{title:'敢达决战',year:'[2021]',tags:'IP 改编 · 机甲 · 版本迭代',
+    client:'福州得游互娱',role:'版本 UI 设计',
+    desc:'参与 1.0 / 2.0 版本 UI 设计，承担切图执行与活动界面迭代优化。',
+    shots:[['p21_0',909,512],['p21_1',909,512],['p21_2',909,512],['p21_3',864,576],['p21_4',909,512]]},
+  youka:{title:'游卡会员中心（SDK 界面）',year:'[2022]',tags:'系统界面 · 账号 / 支付 · 通用组件',
+    client:'杭州游卡',role:'SDK 界面设计',
+    desc:'面向多款产品的通用 SDK 界面设计，兼顾品牌视觉与高可用性，适配多语言与多分辨率环境。',
+    shots:[['p17_0',916,419],['p17_1',915,418],['p17_2',913,417]]}
+};
+const ORDER=Object.keys(PROJECTS);
+const pm=document.getElementById('pmodal');
+const pmBody=document.getElementById('pm-body');
+let pmCur=-1,pmOpen=false;
+
+function renderProject(i){
+  const key=ORDER[i],d=PROJECTS[key];
+  pmCur=i;
+  document.getElementById('pm-idx').textContent=String(i+1).padStart(2,'0');
+  document.getElementById('pm-title').textContent=d.title;
+  document.getElementById('pm-year').textContent=d.year;
+  document.getElementById('pm-tags').textContent=d.tags;
+  document.getElementById('pm-desc').textContent=d.desc;
+  document.getElementById('pm-client').textContent=d.client;
+  document.getElementById('pm-role').textContent=d.role;
+  /* packed edge-to-edge collage — see pmPack() */
+  pmBody.innerHTML=`<div class="pm-collage"></div>`;
+  pmPack(pmBody.firstElementChild,d);
+  document.getElementById('pm-prev').disabled=i===0;
+  document.getElementById('pm-next').disabled=i===ORDER.length-1;
+  pmBody.scrollTop=0;
+}
+function openProject(i){
+  renderProject(i);
+  pm.classList.add('on');pm.setAttribute('aria-hidden','false');
+  document.body.classList.add('pmlock');pmOpen=true;
+}
+/* ---- collage packer --------------------------------------------------
+   Pieces are dropped onto a per-column skyline (shallowest slot wins, with a
+   slight bonus for wide pieces so big shots stay hero-sized). Gutters cycle
+   through a small table, so neighbours land anywhere between a 5px corner
+   overlap and a 9px gap — dense, even, and never covering an image centre. */
+const PM_GAP=5, PM_GS=[5,-4,8,1,-2,6,0,4,-5,9,3,-3];
+function pmPack(wrap,d){
+  if(!wrap)return;
+  const W=wrap.clientWidth||1180, n=d.shots.length;
+  /* micro-column grid : 's' pieces take 1 cell, 'm' 2, normal pieces 2/4 —
+     lets thumbnail-size assets slot beside hero shots without holes */
+  const M = W>=1320 ? (n<=5?8:10)
+          : W>=1000 ? (n<=5?6:8)
+          : W>=760  ? 6
+          : W>=560  ? 4
+          : W>=320  ? 3 : 2;      /* phone: 3 micro-columns keeps shots legible */
+  const uW=(W-PM_GAP*(M-1))/M;
+  const base=new Array(M).fill(0);
+  const out=[]; let bottom=0;
+  d.shots.forEach((sh,i)=>{
+    const ratio=Math.max(.35,sh[1]/sh[2]);
+    let opts;
+    if(sh[3]==='s') opts=[1];
+    else if(sh[3]==='m') opts=[2];
+    else opts = ratio>1.5 ? [4,2] : [2];
+    opts=opts.filter(sp=>sp<=M); if(!opts.length)opts=[1];
+    let best=null;
+    opts.forEach(sp=>{
+      for(let c=0;c<=M-sp;c++){
+        const seg=base.slice(c,c+sp), t=Math.max(...seg), dv=t-Math.min(...seg);
+        const score=t-(sp>=4?14:0);           /* prefer hero-size on near-ties */
+        if(!best||score<best.score-1||
+           (Math.abs(score-best.score)<=1&&(sp>best.sp||(sp===best.sp&&dv<best.dv))))
+          best={t,dv,sp,c,score};
+      }
+    });
+    const g = best.t<=0 ? 0 : PM_GS[i%PM_GS.length];
+    const y = Math.max(0,best.t+g);
+    const w = best.sp*uW+(best.sp-1)*PM_GAP, h=w/ratio;
+    out.push({sh,x:best.c*(uW+PM_GAP),y,w,h,i});
+    base.fill(y+h,best.c,best.c+best.sp);   /* PM_GS alone supplies the gutter */
+    bottom=Math.max(bottom,y+h);
+  });
+  wrap.style.height=(bottom+2)+'px';
+  wrap.innerHTML=out.map(p=>`<figure class="pm-fig" style="left:${p.x.toFixed(1)}px;top:${p.y.toFixed(1)}px;width:${p.w.toFixed(1)}px;--lh:${p.h.toFixed(1)}px">
+      <img src="assets/shots/${p.sh[0]}.jpeg" alt="${d.title} ${p.sh[0]}" loading="${p.i>3?'lazy':'eager'}">
+    </figure>`).join('');
+}
+let pmRz;
+addEventListener('resize',()=>{
+  if(!pmOpen)return;
+  clearTimeout(pmRz);
+  pmRz=setTimeout(()=>{
+    const w=pmBody.firstElementChild;
+    if(w&&w.classList.contains('pm-collage'))pmPack(w,PROJECTS[ORDER[pmCur]]);
+  },140);
+});
+function closeProject(){
+  pm.classList.remove('on');pm.setAttribute('aria-hidden','true');
+  document.body.classList.remove('pmlock');pmOpen=false;
+}
+document.querySelectorAll('.card[data-p]').forEach(card=>
+  card.addEventListener('click',()=>openProject(ORDER.indexOf(card.dataset.p))));
+document.getElementById('pm-close').addEventListener('click',closeProject);
+document.getElementById('pm-prev').addEventListener('click',()=>pmCur>0&&renderProject(pmCur-1));
+document.getElementById('pm-next').addEventListener('click',()=>pmCur<ORDER.length-1&&renderProject(pmCur+1));
+addEventListener('keydown',e=>{
+  if(!pmOpen)return;
+  if(e.key==='Escape')closeProject();
+  else if(e.key==='ArrowLeft'&&pmCur>0)renderProject(pmCur-1);
+  else if(e.key==='ArrowRight'&&pmCur<ORDER.length-1)renderProject(pmCur+1);
+});
+
+/* ---- ambient HUD decorations : purely cosmetic chrome scattered around
+   each section (clock / coords / vertical label / crosses / reticle /
+   barcode / scan tag / dot grid / hazard + access bars) ---------------- */
+(function(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const mk=(host,cls,txt,pos)=>{
+    const el=document.createElement('div');
+    el.className='dz '+cls;el.setAttribute('aria-hidden','true');
+    if(txt)el.textContent=txt;
+    if(pos)el.style.cssText=pos;
+    host.appendChild(el);return el;
+  };
+  /* hero : live system clock + chrome around the portrait column */
+  const hero=document.querySelector('.hero');
+  if(hero){
+    const clock=mk(hero,'dz-clock','','right:26px;top:104px');
+    clock.innerHTML='<i>SYS.TIME // UTC+8</i><b>--:--:--</b>';
+    const tick=()=>{const b=clock.querySelector('b');if(b)b.textContent=new Date().toTimeString().slice(0,8);};
+    tick();setInterval(tick,1000);
+    mk(hero,'dz-vtext','SIGIL.PORTFOLIO // ZXN_2026','right:16px;top:44%');
+    mk(hero,'dz-plus','+','left:3%;top:16%');
+    mk(hero,'dz-plus','+','left:56%;top:9%');
+    mk(hero,'dz-x','×','left:44%;top:78%');
+    mk(hero,'dz-ret','','left:5%;top:66%');
+    mk(hero,'dz-dots','','right:8%;top:14%');
+  }
+  /* about */
+  const about=document.getElementById('about');
+  if(about){
+    mk(about,'dz-vtext','PERSONAL.FILE // SEC.01','right:16px;top:26%');
+    mk(about,'dz-plus','+','left:10px;top:60px');
+    mk(about,'dz-plus','+','right:10px;top:38%');
+    mk(about,'dz-x','×','left:2%;top:46%');
+    mk(about,'dz-x','×','right:5%;bottom:9%');
+    mk(about,'dz-coord','ID_VERIFIED<b>CLEARANCE.UI_07</b>','left:10px;bottom:7%');
+    mk(about,'dz-dots','','right:4%;bottom:16%');
+    mk(about,'dz-scn','/SCN_01 // ID.CARD','right:6%;top:64px');
+  }
+  /* projects */
+  const projects=document.getElementById('projects');
+  if(projects){
+    mk(projects,'dz-vtext','INTRUSION.MODE // SEC.02','right:16px;top:20%');
+    mk(projects,'dz-plus','+','left:10px;top:56px');
+    mk(projects,'dz-plus','+','left:4%;bottom:8%');
+    mk(projects,'dz-x','×','right:3%;top:52%');
+    mk(projects,'dz-ret','','left:2%;top:34%');
+    mk(projects,'dz-bar','','right:5%;top:118px');
+    mk(projects,'dz-scn','/SCN_02 // WORK.INDEX','left:6%;top:64px');
+    mk(projects,'dz-coord','BREACH_LOG<b>PORT_00..08 OPEN</b>','right:10px;bottom:7%');
+  }
+  /* practice */
+  const practice=document.getElementById('practice');
+  if(practice){
+    mk(practice,'dz-vtext','LAB.ARCHIVE // SEC.03','right:16px;top:16%');
+    mk(practice,'dz-plus','+','right:10px;top:52px');
+    mk(practice,'dz-plus','+','left:10px;bottom:12%');
+    mk(practice,'dz-x','×','left:3%;top:44%');
+    mk(practice,'dz-ret','','right:3%;bottom:20%');
+    mk(practice,'dz-scn','/SCN_03 // DAILY.PAINT','right:6%;top:64px');
+    mk(practice,'dz-dots','','left:2%;top:26%');
+  }
+  /* contact / footer : chrome + hazard & access bars in normal flow */
+  const contact=document.getElementById('contact');
+  if(contact){
+    mk(contact,'dz-vtext','END.OF.SIGNAL // EOF','right:16px;top:14%');
+    mk(contact,'dz-plus','+','left:10px;top:44px');
+    mk(contact,'dz-plus','+','right:12px;top:40%');
+    mk(contact,'dz-x','×','left:4%;top:30%');
+    mk(contact,'dz-coord','TX_COMPLETE<b>UPLINK 100%</b>','left:10px;top:14%');
+    const hz=document.createElement('div');hz.className='dz-hazard';hz.setAttribute('aria-hidden','true');
+    const ac=document.createElement('div');ac.className='dz-access';ac.setAttribute('aria-hidden','true');
+    ac.innerHTML='<b>&gt; ACCESS GRANTED_</b>';
+    contact.appendChild(hz);contact.appendChild(ac);
+  }
+})();
+
+/* ---- mini project window : overseas / domestic -------------------------
+   Terminal-style popup. The window unfolds out of a hairline, a scan bar
+   sweeps down, the path types itself in, then the shots cascade. Shots are
+   sized so the whole set fits one row edge-to-edge with no scrolling. */
+const MINI={
+  sentient:{title:'Sentient Trainer',sub:'OVERSEAS · 宠物养成',path:'~/works/overseas/sentient_trainer',
+    met:'宠物养成 · 全流程 UI · 2026',tag:'CASUAL PET',
+    shots:[['p04_x240',450,801],['p04_x243',450,801],['p04_x252',450,801],['p04_x246',450,801],['p04_x249',450,801],
+      ['st1',750,1334],['st2',750,1334],['st3',750,1334],['st4',750,1334],['st5',750,1334]]},
+  mermaid:{title:'美人鱼消消',sub:'OVERSEAS · 三消',path:'~/works/overseas/mermaid_match',
+    met:'三消益智 · UI 设计 · 2025',tag:'MATCH-3',
+    shots:[['p08_x392',432,768],['p08_x395',432,768],['p08_x398',432,768],['p08_x386',432,768],['p08_x389',432,768],
+           ['p08_x419',600,481],['p08_x422',664,484]]},
+  watersort:{title:'Water Sort: Magic World',sub:'OVERSEAS · 益智排序',path:'~/works/overseas/water_sort',
+    met:'益智排序 · UI 设计 · 2024',tag:'PUZZLE',
+    shots:[['p09_x440',820,400],['p09_x443',432,768],['p09_x446',432,768],['p09_x449',432,768]]},
+  cakesort:{title:'Cake Sort: Puzzle',sub:'OVERSEAS · 分类益智',path:'~/works/overseas/cake_sort',
+    met:'分类益智 · UI 设计 · 2024',tag:'PUZZLE',
+    shots:[['p10_x474',432,768],['p10_x465',432,768],['p10_x468',432,768],['p10_x462',432,768],['p10_x471',432,768]]},
+  brainking:{title:'Brain King: Twist and Turn',sub:'OVERSEAS · 脑洞益智',path:'~/works/overseas/brain_king',
+    met:'脑洞益智 · UI 设计 · 2024',tag:'PUZZLE',
+    shots:[['p11_x494',432,768],['p11_x497',432,768],['p11_x488',432,768],['p11_x491',432,768]]},
+  cutit:{title:'Cut It: Rope Puzzle',sub:'OVERSEAS · 割绳解谜',path:'~/works/overseas/cut_it',
+    met:'割绳解谜 · UI 设计 · 2023',tag:'PUZZLE',
+    shots:[['p12_x511',922,450],['p12_x514',431,766],['p12_x517',431,766],['p12_x520',431,766]]},
+  plab:{title:'Personality Lab',sub:'OVERSEAS · 趣味测试',path:'~/works/overseas/personality_lab',
+    met:'趣味测试 · UI 设计 · 2023',tag:'QUIZ',
+    shots:[['p13_x533',432,768],['p13_x539',432,768],['p13_x542',432,768],['p13_x536',432,768],['p13_x545',432,768]]},
+  renyu:{title:'人鱼寻食',sub:'DOMESTIC · 休闲消除',path:'~/works/domestic/mermaid_feast',
+    met:'休闲消除 · UI 设计 · 2025',tag:'CASUAL',
+    shots:[['p05_x266',432,768],['p05_x275',432,768],['p05_x269',432,768],['p05_x272',432,768],['p05_x278',432,768]]},
+  alien:{title:'异形吞噬战',sub:'DOMESTIC · 超休闲',path:'~/works/domestic/alien_devour',
+    met:'超休闲 · UI 设计 · 2025',tag:'HYPER CASUAL',
+    shots:[['p06_x291',355,786],['p06_x293',360,640],['p06_x296',360,640],['p06_x299',360,640],
+           ['p06_x302',357,640],['p06_x305',357,640]]},
+  xiaoyao:{title:'逍遥群神榜',sub:'DOMESTIC · 神话卡牌',path:'~/works/domestic/immortal_rank',
+    met:'神话卡牌 · UI 设计 · 2025',tag:'CARD',
+    shots:[['p07_x317',450,801],['p07_x320',450,801],['p07_x329',450,801],['p07_x326',450,801],['p07_x323',450,801],
+      ['xy1',750,1334],['xy2',750,1334],['xy3',750,1334],['xy4',654,1025]]}
+};
+const hmodal=document.getElementById('hmodal'),hmStage=document.getElementById('hm-stage'),
+      hmPathEl=document.getElementById('hm-path'),hmLogEl=document.getElementById('hm-log');
+let hmOn=false,hmKey='',hmTyper,hmRz;
+
+function hmType(txt){
+  clearInterval(hmTyper);hmPathEl.textContent='';
+  let i=0;
+  hmTyper=setInterval(()=>{
+    hmPathEl.textContent=txt.slice(0,++i);
+    if(i>=txt.length)clearInterval(hmTyper);
+  },20);
+}
+/* one shared cell for every shot — contain, so nothing is ever cropped ;
+   whatever doesn't fit rides the horizontal bar */
+const HM_RATIO=0.6, HM_MIN=196;   /* cell width : height (≈ phone portrait), and the readable floor */
+function hmLayout(){
+  const d=MINI[hmKey];if(!d)return;
+  const mob=innerWidth<760;
+  const n=d.shots.length,GAP=mob?9:12,PAD=mob?24:40;    /* PAD = track side padding */
+  const MINC=mob?176:HM_MIN;                            /* readable floor, tighter on a phone */
+  const aw=Math.max(280,hmStage.clientWidth);
+  const ah=Math.max(170,hmStage.clientHeight-40);
+  const cap=ah*HM_RATIO;                                /* tallest cell the stage allows */
+  let cw=(aw-PAD-12-GAP*(n-1))/n;                       /* 12px slack keeps near-fit rows off the bar */
+  cw=Math.min(cw,cap);
+  cw=Math.max(cw,Math.min(MINC,cap));                   /* keep thumbs readable → let the bar scroll */
+  const W=Math.round(cw), H=Math.round(W/HM_RATIO);
+  const total=n*W+GAP*(n-1)+PAD;
+  hmStage.innerHTML=`<div class="hm-track">`+d.shots.map((s,i)=>
+    `<figure class="hm-pic" style="width:${W}px;height:${H}px;--i:${i}" data-tag="${String(i+1).padStart(2,'0')} / ${s[0]}">`
+    +`<img src="assets/${s[0]}.jpeg" alt="${d.title} 界面 ${i+1}" loading="${i>3?'lazy':'eager'}"></figure>`).join('')+`</div>`;
+  hmStage.firstElementChild.style.margin=total<=aw?'0 auto':'0';
+  hmLogEl.textContent=`> MOUNTED ${String(n).padStart(2,'0')} SHOTS // ${d.tag} // ${W}×${H}`
+    +(total>aw?' // SCROLL ⇄':'');
+  hmStage.scrollLeft=0;
+}
+/* the wheel rides the bar horizontally while the pointer is over the stage */
+hmStage.addEventListener('wheel',e=>{
+  if(hmStage.scrollWidth<=hmStage.clientWidth)return;
+  const dlt=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+  if(!dlt)return;
+  e.preventDefault();hmStage.scrollLeft+=dlt;
+},{passive:false});
+function openMini(k){
+  const d=MINI[k];if(!d)return;
+  hmKey=k;hmOn=true;
+  document.getElementById('hm-title').textContent=d.title;
+  document.getElementById('hm-sub').textContent=d.sub;
+  document.getElementById('hm-met').textContent=d.met;
+  hmodal.classList.remove('closing');
+  hmLayout();
+  hmodal.classList.add('on');
+  hmodal.setAttribute('aria-hidden','false');
+  document.body.classList.add('hmlock');
+  hmType(d.path);
+}
+function closeMini(){
+  if(!hmOn)return;hmOn=false;
+  clearInterval(hmTyper);
+  hmodal.classList.remove('on');
+  hmodal.classList.add('closing');
+  hmodal.setAttribute('aria-hidden','true');
+  document.body.classList.remove('hmlock');
+  setTimeout(()=>hmodal.classList.remove('closing'),300);
+}
+document.querySelectorAll('.mini[data-m]').forEach(el=>
+  el.addEventListener('click',()=>openMini(el.dataset.m)));
+document.getElementById('hm-close').addEventListener('click',closeMini);
+hmodal.addEventListener('click',e=>{if(!e.target.closest('.hm-win'))closeMini();});
+addEventListener('keydown',e=>{if(hmOn&&e.key==='Escape')closeMini();});
+addEventListener('resize',()=>{
+  if(!hmOn)return;
+  clearTimeout(hmRz);
+  hmRz=setTimeout(hmLayout,140);
+});
+
+/* ---- practice marquees : seamless auto-scroll, pause + lift on hover ----
+   Each row ships one pristine .mq-set. We repeat it just far enough to cover
+   the viewport, then duplicate the whole run so translateX(-50%) closes the
+   loop with no seam. Speed is fixed in px/s, so all rows drift alike.
+   Rows flagged .off get a half-period negative delay so the two mini rows
+   of a category never align vertically. */
+const MQ_SPEED=34;
+function mqBuild(mq){
+  const track=mq.querySelector('.mq-track');if(!track)return;
+  if(!mq.dataset.unit)mq.dataset.unit=mq.querySelector('.mq-set').outerHTML;
+  track.innerHTML=mq.dataset.unit;
+  const base=track.firstElementChild;
+  const unitW=base.getBoundingClientRect().width||1;
+  const cw=mq.clientWidth||1200;
+  const reps=Math.max(1,Math.ceil((cw+unitW)/unitW));
+  track.innerHTML='';
+  for(let i=0;i<reps*2;i++)track.appendChild(base.cloneNode(true));
+  const dur=reps*unitW/MQ_SPEED;
+  track.style.animationDuration=dur.toFixed(1)+'s';
+  track.style.animationDelay=mq.classList.contains('off')?(-dur/2).toFixed(1)+'s':'0s';
+}
+document.querySelectorAll('.marquee').forEach(mqBuild);
+let mqRz;
+addEventListener('resize',()=>{
+  clearTimeout(mqRz);
+  mqRz=setTimeout(()=>document.querySelectorAll('.marquee').forEach(mqBuild),220);
+});
+
+/* ---- footer flicker word : 反叛 ⇄ 正义 ⇄ 自由 ----
+   Every beat the word stutters (opacity / skew / rgb-split ghost) and the
+   new word lands mid-flicker, so it reads as a signal switching channels. */
+(function flickerWord(){
+  const flip=document.querySelector('.flip');if(!flip)return;
+  const fw=flip.querySelector('.fw');
+  const WORDS=['反叛','正义','自由'],CLR=['#00ff41','#f2f5f0','#00e5ff'];
+  let i=0,busy=false;
+  function beat(){
+    if(busy)return;busy=true;
+    fw.classList.remove('glitch');flip.classList.remove('on');
+    void fw.offsetWidth;                       /* restart the keyframes */
+    fw.classList.add('glitch');flip.classList.add('on');
+    setTimeout(()=>{                           /* swap mid-flicker */
+      i=(i+1)%WORDS.length;
+      fw.textContent=WORDS[i];
+      flip.dataset.w=WORDS[i];
+      fw.dataset.w=WORDS[i];
+      flip.style.color=CLR[i];
+    },200);
+    setTimeout(()=>{fw.classList.remove('glitch');flip.classList.remove('on');busy=false;},560);
+  }
+  setInterval(beat,2600);
+  /* first switch shortly after the page settles */
+  setTimeout(beat,1800);
+})();
+</script>
+</body>
+</html>
